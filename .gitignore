@@ -5,11 +5,12 @@ __pycache__/
 
 # C extensions
 *.so
-
+.catkin_tools/
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
+devel/
 dist/
 downloads/
 eggs/
