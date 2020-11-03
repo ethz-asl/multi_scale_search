@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# files that are created through the simulation
+problem_config.txt
+animation.mp4
+item_x_samples_*
+item_y_samples_*
+*.pomdpx
+*.policy
+
+
 # C extensions
 *.so
 .catkin_tools/

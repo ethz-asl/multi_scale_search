@@ -1,0 +1,93 @@
+s_l2;a_l2;policy
+0;nav(0,1);24:nav(24,27) nav(1,27).25:nav(25,27) nav(1,27).26:nav(26,27) nav(1,27).27:nav(1,27)
+1;nav(0,1);0:nav(0,1) nav(1,27).1:nav(1,27).2:nav(1,2) nav(1,27)
+1;nav(1,2);0:nav(0,1) nav(1,2) nav(2,3).1:nav(1,2) nav(2,3).2:nav(2,3)
+1;nav(1,9);0:nav(0,12).1:nav(1,13).2:nav(2,14)
+1;nav(1,10);0:nav(0,1) nav(1,2) nav(2,15).1:nav(1,2) nav(2,15).2:nav(2,15)
+2;nav(1,2);3:nav(2,3).4:nav(3,4) nav(2,3).5:nav(4,5) nav(3,4) nav(2,3)
+2;nav(2,3);3:nav(3,4) nav(4,31).4:nav(4,31).5:nav(4,5) nav(4,31)
+2;nav(2,5);3:nav(3,4) nav(4,5) nav(5,6).4:nav(4,5) nav(5,6).5:nav(5,6)
+2;nav(2,9);3:nav(3,14).4:nav(3,4) nav(3,14).5:nav(4,5) nav(3,4) nav(3,14)
+2;nav(2,10);3:nav(3,15).4:nav(3,4) nav(3,15).5:nav(4,5) nav(3,4) nav(3,15)
+3;nav(2,3);28:nav(28,31) nav(4,31).29:nav(29,31) nav(4,31).30:nav(30,31) nav(4,31).31:nav(4,31)
+4;nav(4,5);32:nav(32,35) nav(7,35).34:nav(34,35) nav(7,35).34:nav(34,35) nav(7,35).35:nav(7,35)
+5;nav(2,5);6:nav(5,6).7:nav(6,7) nav(5,6).8:nav(7,8) nav(6,7) nav(5,6)
+5;nav(4,5);6:nav(6,7) nav(7,35).7:nav(7,35).8:nav(7,8) nav(7,35)
+5;nav(5,6);6:nav(6,7) nav(7,8) nav(8,9).7:nav(7,8) nav(8,9).8:nav(8,9)
+5;nav(5,13);6:nav(6,7) nav(7,8) nav(8,20).7:nav(7,8) nav(8,20).8:nav(8,20)
+5;nav(5,14);6:nav(6,7) nav(7,8) nav(8,21).7:nav(7,8) nav(8,21).8:nav(8,21)
+6;nav(5,6);9:nav(8,9).10:nav(9,10) nav(8,9).11:nav(10,11) nav(9,10) nav(8,9)
+6;nav(6,7);9:nav(9,10) nav(10,39).10:nav(10,39).11:nav(10,11) nav(10,39)
+6;nav(6,13);9:nav(9,20).10:nav(9,10) nav(9,20).11:nav(10,11) nav(9,10) nav(9,20)
+6;nav(6,14);9:nav(9,21).10:nav(10,22).11:nav(11,23)
+7;nav(6,7);36:nav(36,39) nav(10,39).37:nav(37,39) nav(10,39).38:nav(38,39) nav(10,39).39:nav(10,39)
+8;nav(8,9);40:nav(13,40).41:nav(40,41) nav(13,40).42:nav(40,42) nav(13,40).43:nav(40,43) nav(13,40)
+9;nav(1,9);12:nav(0,12).13:nav(1,13).14:nav(2,14)
+9;nav(2,9);12:nav(12,13) nav(13,14) nav(3,14).13:nav(13,14) nav(3,14).14:nav(3,14)
+9;nav(8,9);12:nav(12,13) nav(13,40).13:nav(13,40).14:nav(13,14) nav(13,40)
+9;nav(9,10);12:nav(12,13) nav(13,14) nav(14,15).13:nav(13,14) nav(14,15).14:nav(14,15)
+10;nav(1,10);15:nav(2,15).16:nav(15,16) nav(2,15).17:nav(16,17) nav(15,16) nav(2,15)
+10;nav(2,10);15:nav(3,15).16:nav(15,16) nav(3,15).17:nav(16,17) nav(15,16) nav(3,15)
+10;nav(9,10);15:nav(14,15).16:nav(15,16) nav(14,15).17:nav(16,17) nav(15,16) nav(14,15)
+10;nav(10,11);15:nav(15,16) nav(16,44).16:nav(16,44).17:nav(16,17) nav(16,44)
+10;nav(10,13);15:nav(15,16) nav(16,17) nav(17,18).16:nav(16,17) nav(17,18).17:nav(17,18)
+11;nav(10,11);44:nav(16,44).45:nav(44,45) nav(16,44).46:nav(44,46) nav(16,44).47:nav(44,47) nav(16,44)
+12;nav(12,13);48:nav(19,48).49:nav(48,49) nav(19,48).50:nav(48,50) nav(19,48).51:nav(48,51) nav(19,48)
+13;nav(5,13);18:nav(18,19) nav(19,20) nav(8,20).19:nav(19,20) nav(8,20).20:nav(8,20)
+13;nav(6,13);18:nav(18,19) nav(19,20) nav(9,20).19:nav(19,20) nav(9,20).20:nav(9,20)
+13;nav(10,13);18:nav(17,18).19:nav(18,19) nav(17,18).20:nav(19,20) nav(18,19) nav(17,18)
+13;nav(12,13);18:nav(18,19) nav(19,48).19:nav(19,48).20:nav(19,20) nav(19,48)
+13;nav(13,14);18:nav(18,19) nav(19,20) nav(20,21).19:nav(19,20) nav(20,21).20:nav(20,21)
+14;nav(5,14);21:nav(8,21).22:nav(21,22) nav(8,21).23:nav(22,23) nav(21,22) nav(8,21)
+14;nav(6,14);21:nav(9,21).22:nav(10,22).23:nav(11,23)
+14;nav(13,14);21:nav(20,21).22:nav(21,22) nav(20,21).23:nav(22,23) nav(21,22) nav(20,21)
+14;nav(14,15);21:nav(21,22) nav(22,52).22:nav(22,52).23:nav(22,23) nav(22,52)
+15;nav(14,15);52:nav(22,52).53:nav(52,53) nav(22,52).54:nav(52,54) nav(22,52).55:nav(52,55) nav(22,52)
+0 0;pickup;24 25:nav(24,25) pickup.25 25:pickup.26 25:nav(25,26) pickup.27 25:nav(25,27) pickup
+0 none;pickup;24 none:nav(24,25) look_around.25 none:look_around.26 none:nav(25,26) look_around.27 none:nav(25,27) look_around
+1 1;pickup;0 1:nav(0,1) pickup.1 1:pickup.2 1:nav(1,2) pickup
+1 none;pickup;0 none:nav(0,1) look_around.1 none:look_around.2 none:nav(1,2) look_around
+2 2;pickup;3 4:nav(3,4) pickup.4 4:pickup.5 4:nav(4,5) pickup
+2 none;pickup;3 none:nav(3,4) look_around.4 none:look_around.5 none:nav(4,5) look_around
+3 3;pickup;28 29:nav(28,29) pickup.29 29:pickup.30 29:nav(29,30) pickup.31 29:nav(29,31) pickup
+3 none;pickup;28 none:nav(28,29) look_around.29 none:look_around.30 none:nav(29,30) look_around.31 none:nav(29,31) look_around
+4 4;pickup;32 33:nav(32,33) pickup.33 33:pickup.34 33:nav(33,34) pickup.35 33:nav(33,35) pickup
+4 none;pickup;32 none:nav(32,33) look_around.33 none:look_around.34 none:nav(33,34) look_around.35 none:nav(33,35) look_around
+5 5;pickup;6 7:nav(6,7) pickup.7 7:pickup.8 7:nav(7,8) pickup
+5 none;pickup;6 none:nav(6,7) look_around.7 none:look_around.8 none:nav(7,8) look_around
+6 6;pickup;9 10:nav(9,10) pickup.10 10:pickup.11 10:nav(10,11) pickup
+6 none;pickup;9 none:nav(9,10) look_around.10 none:look_around.11 none:nav(10,11) look_around
+7 7;pickup;36 37:nav(36,37) pickup.37 37:pickup.38 37:nav(37,38) pickup.39 37:nav(37,39) pickup
+7 none;pickup;36 none:nav(36,37) look_around.37 none:look_around.38 none:nav(37,38) look_around.39 none:nav(37,39) look_around
+8 8;pickup;40 42:nav(40,42) pickup.41 42:nav(41,42) pickup.42 42:pickup.43 42:nav(42,43) pickup
+8 none;pickup;40 none:nav(40,42) look_around.41 none:nav(41,42) look_around.42 none:look_around.43 none:nav(42,43) look_around
+9 9;pickup;12 13:nav(12,13) pickup.13 13:pickup.14 13:nav(13,14) pickup
+9 none;pickup;12 none:nav(12,13) look_around.13 none:look_around.14 none:nav(13,14) look_around
+10 10;pickup;15 16:nav(15,16) pickup.16 16:pickup.17 16:nav(16,17) pickup
+10 none;pickup;15 none:nav(15,16) look_around.16 none:look_around.17 none:nav(16,17) look_around
+11 11;pickup;44 46:nav(44,46) pickup.45 46:nav(45,46) pickup.46 46:pickup.47 46:nav(46,47) pickup
+11 none;pickup;44 none:nav(44,46) look_around.45 none:nav(45,46) look_around.46 none:look_around.47 none:nav(46,47) look_around
+12 12;pickup;48 50:nav(48,50) pickup.49 50:nav(49,50) pickup.50 50:pickup.51 50:nav(50,51) pickup
+12 none;pickup;48 none:nav(48,50) look_around.49 none:nav(49,50) look_around.50 none:look_around.51 none:nav(50,51) look_around
+13 13;pickup;18 19:nav(18,19) pickup.19 19:pickup.20 19:nav(19,20) pickup
+13 none;pickup;18 none:nav(18,19) look_around.19 none:look_around.20 none:nav(19,20) look_around
+14 14;pickup;21 22:nav(21,22) pickup.22 22:pickup.23 22:nav(22,23) pickup
+14 none;pickup;21 none:nav(21,22) look_around.22 none:look_around.23 none:nav(22,23) look_around
+15 15;pickup;52 54:nav(52,54) pickup.53 54:nav(53,54) pickup.54 54:pickup.55 54:nav(54,55) pickup
+15 none;pickup;52 none:nav(52,54) look_around.53 none:nav(53,54) look_around.54 none:look_around.55 none:nav(54,55) look_around
+0;release;24:nav(24,25) release.25:release.26:nav(25,26) release.27:nav(25,27) release
+1;release;0:nav(0,1) release.1:release.2:nav(1,2) release
+2;release;3:nav(3,4) release.4:release.5:nav(4,5) release
+3;release;28:nav(28,29) release.29:release.30:nav(29,30) release.31:nav(29,31) release
+4;release;32:nav(32,33) release.33:release.34:nav(33,34) release.35:nav(33,35) release
+5;release;6:nav(6,7) release.7:release.8:nav(7,8) release
+6;release;9:nav(9,10) release.10:release.11:nav(10,11) release
+7;release;36:nav(36,37) release.37:release.38:nav(37,38) release.39:nav(37,39) release
+8;release;40:nav(40,42) release.41:nav(41,42) release.42:release.43:nav(42,43) release
+9;release;12:nav(12,13) release.13:release.14:nav(13,14) release
+10;release;15:nav(15,16) release.16:release.17:nav(16,17) release
+11;release;44:nav(44,46) release.45:nav(45,46) release.46:release.47:nav(46,47) release
+12;release;48:nav(48,50) release.49:nav(49,50) release.50:release.51:nav(50,51) release
+13;release;18:nav(18,19) release.19:release.20:nav(19,20) release
+14;release;21:nav(21,22) release.22:release.23:nav(22,23) release
+15;release;52:nav(52,54) release.53:nav(53,54) release.54:release.55:nav(54,55) release

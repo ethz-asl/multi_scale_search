@@ -1,16 +1,22 @@
 import argparse
+from src.low_fidelity_simulation.gui_low_fidelity_sim import GUI_LFS
+#import multi_scale_search as mss
+import config
 
-import multi_scale_search as mss
 
 def main(args):
     if args.gui:
-        print("Creating fancy GUI")
+        config.init('low_fidelity_simulation')
+        gui = GUI_LFS()
+        gui.run()
 
-    agent = mss.agents.FlatAgent()
+
+    #agent = mss.agents.FlatAgent()
     
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--gui", action="store_true")
     args = parser.parse_args()
+    #args.gui = True
     main(args)
