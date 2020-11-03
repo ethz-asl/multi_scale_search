@@ -869,8 +869,6 @@ class AgentMultiScaleBasis(Agent):
                                                         action_names_li)})
         if a_name_top[0:3] == 'nav' and len(s_terminals_li) > 1:
             top_layer = layer - 1
-            if layer == 2:
-                debug = True
             # get next action above
             s_top_next = self.s_layers[top_layer].copy()
             n0_top, n1_top = auxiliary_functions.nav_action_get_n0(a_name_top), auxiliary_functions.nav_action_get_n1(
@@ -949,7 +947,7 @@ class AgentMultiScaleBasis(Agent):
                                 action_names_li, z_values_li)
         # solve POMDP with SARSOP
         os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
-            self.timeout_time, self.timeout_time,
+            config.solving_precision, self.timeout_time,
             self.file_names_input[layer], self.file_names_output[layer]))
         a_name_li = self.read_policy(self.s_layers[layer], layer, xa_values_li, x_items_values_li, z_values_li,
                                      action_names_li, POMDP_key='current')

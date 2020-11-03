@@ -106,7 +106,7 @@ class GUI_LFS:
         self.lbl_maxit = tk.Label(master=self.conf_frame, text='max iterations', font=('Arial', 12))
         self.lbl_maxit.grid(column=0, row=1, sticky='w')
         self.tb_maxit = tk.Entry(self.conf_frame, width=5)
-        self.tb_maxit.insert(0, 1000)
+        self.tb_maxit.insert(0, 1200)
         self.tb_maxit.grid(column=1, row=1, sticky='w')
         self.lbl_ag = tk.Label(master=self.conf_frame, text='agent:', font=('Arial', 12), anchor='w')
         self.lbl_ag.grid(column=0, row=2, sticky='w')
@@ -177,7 +177,7 @@ class GUI_LFS:
                                          font=('Arial', 12))
         self.lbl_testscenario.grid(column=0, row=3, sticky='w')
         self.cb_testscenario = ttk.Combobox(master=self.evaluation_frame, width=12)
-        self.cb_testscenario['values'] = ('scenario 01', 'scenario 02', 'scenario 03', 'scenario 04', 'scenario 05')
+        self.cb_testscenario['values'] = ('scenario 01', 'scenario 02', 'scenario 03', 'scenario 04', 'scenario 05', 'corner case 01')
         self.cb_testscenario.grid(column=1, row=3)
         self.btn_testscenario = tk.Button(self.evaluation_frame, text='set test scenario',
                                           command=lambda: self.__btn_set_test_scenario())
@@ -430,6 +430,21 @@ class GUI_LFS:
             b_x = [10.0, 23.0]
             b_y = [23.0, 6.0]
             b_p = [0.3, 0.5]
+
+        elif test_scenario == 'corner case 01':
+            self.cb_env.set('big')
+            ag_x, ag_y = 1.0, 9.5
+            belief_spot_sigma = 0.2
+            nr_of_items = 1
+            item_types = ['mug']
+            init_x = [10.6]
+            init_y = [24.0]
+            goal_x = [17.0]
+            goal_y = [9.0]
+            belief_types = ['mug', 'mug', 'mug', 'mug']
+            b_x = [10.0, 23.0, 3.0, 3.4]
+            b_y = [23.0, 6.0, 15.0, 4.8]
+            b_p = [0.2, 0.3, 0.2, 0.15]
 
         else:
             messagebox.showinfo('Error', 'invalid test-scenario')

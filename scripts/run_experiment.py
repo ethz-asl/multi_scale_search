@@ -10,8 +10,6 @@ def main(args):
         gui = GUI_LFS()
         gui.run()
 
-
-    #agent = mss.agents.FlatAgent()
     
 
 if __name__ == "__main__":
