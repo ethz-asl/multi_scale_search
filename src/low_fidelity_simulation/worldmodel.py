@@ -1,4 +1,5 @@
 import math
+import logging
 
 import numpy as np
 from numpy import linalg as LA
@@ -16,6 +17,7 @@ class WorldModel:
     # note: world_grid is in general not the same as the grid the agent has
     # agent_conf0 is a tuple of x,y,theta
     def __init__(self, world_grid=Grid(1, 1, 1, 1), agent_conf0=(0, 0, 0)):
+        self.log = logging.getLogger(__name__)
         # grid is of type Grid. The value is 'free if cell is empty, 'mug' if the mug is there, etc.
         self.grid = world_grid
         # agent/robot conf.
@@ -89,10 +91,12 @@ class WorldModel:
                     if self.agent_carries != 'none':
                         self.item_agent_carries.set_position(self.agent_x, self.agent_y)
                 else:
-                    print('agent tries to drive into {} space'.format(self.grid.cells[new_cell_v][new_cell_u].value))
-
+                    msg = 'agent tries to drive into {} space'.format(self.grid.cells[new_cell_v][new_cell_u].value)
+                    print(msg)
+                    self.log.info(msg)
             else:
                 print('agent tries to drive outside of the map')
+                self.log.info('agent tries to drive outside of the map')
             self.update_world_time((agent_x_old, agent_y_old, agent_theta_old), action_value,
                                    state_new=(self.agent_x, self.agent_y, self.agent_theta))
 
@@ -218,3 +222,4 @@ class WorldModel:
                 self.time += 1  # penalty for unsuccessful pickup
         else:
             print('Error: time not defined for input ({},{},{})'.format(state, action_value, state_new))
+            self.log.warning('Error: time not defined for input ({},{},{})'.format(state, action_value, state_new))

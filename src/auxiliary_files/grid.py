@@ -1,4 +1,5 @@
 import math
+import logging
 
 import numpy as np
 
@@ -7,6 +8,7 @@ class Grid:
 
     def __init__(self, nr_of_cells_x=-1, nr_of_cells_y=-1, world_width=-1, world_height=-1, default_value='free',
                  grid_name='none', default_seen=1, x0=0, y0=0):
+        self.log = logging.getLogger(__name__)
         self.nr_of_cells_x = nr_of_cells_x
         self.nr_of_cells_y = nr_of_cells_y
         self.total_width = float(world_width)
@@ -91,6 +93,7 @@ class Grid:
             return self.cells[v][u]
         else:
             print('position outside of grid')
+            self.log.warning('position outside of grid')
             return -1
 
     def get_position_by_indices(self, u, v):

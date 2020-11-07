@@ -1,4 +1,5 @@
 import math
+import logging
 
 import numpy as np
 from numpy import linalg as LA
@@ -11,6 +12,7 @@ from src.multi_scale_search import auxiliary_functions
 class Action:
     # IMPORTANT NOTE: pickup actions need to start with pickup0 for the first item
     def __init__(self, name, file_name, layer, environment, xa_values, nodegraph):
+        self.log = logging.getLogger(__name__)
         self.name = name
         self.file_name = file_name
         self.models_path = config.BASE_FOLDER_SIM + environment + '_environment/models/'
@@ -45,7 +47,7 @@ class Action:
                 self.finish_action(s, item_present=item_present)
                 return 'finished'
             elif not self.is_goalref_still_valid(s, agent_x, agent_y, agent_theta, grid, b0):
-                print('replanning\n')
+                self.log.info('replanning')
                 self.steps_since_replanning = 0
                 self.goal_ref = self.core_algorithm(s, item_map, agent_x, agent_y, agent_theta, grid, nodegraph, items,
                                                     b0)
@@ -78,7 +80,7 @@ class Action:
 
     # overwritten by child class
     # TODO: When adding a new simulation type (e.g. ROS) this method needs to be adapted for each action child-class
-    def is_action_finished(self, s, item_map, b0=-1):
+    def is_action_finished(self, s, item_map, b0):
         return False, False
 
 
@@ -135,6 +137,7 @@ class Navigate(Action):
         self.recs_j = nodegraph.node_recs[self.n_j]
         Action.__init__(self, name, file_name, layer, environment, xa_values, nodegraph)
         self.initialize_obs_probability(xa_values, nodegraph, grid=grid)
+        self.log = logging.getLogger(__name__)
 
     def initialize_t_expected(self, xa_values, nodegraph):
         # read from file
@@ -168,14 +171,14 @@ class Navigate(Action):
 
         return goal_ref
 
-    def is_action_finished(self, s, item_map, b0=-1):
+    def is_action_finished(self, s, item_map, b0):
         xa = s['xa']
         # criteria 1: if the max_belief increased, finish
         if config.simulation_name == 'low_fidelity_simulation':
             if b0 != -1 and self.start_max_belief > 0:
                 b_max = b0.get_max_belief_cell_value(xa)
                 if (b_max / self.start_max_belief) > (max(1.05, 0.9 / self.start_max_belief)):
-                    print('NAVIGATE FINISHED, MAX BELIEF OVER 0.9')
+                    self.log.info(self.name + 'finished, max belief over 0.9')
                     return True, True
         # criteria 2: if agent arrived in goal location
         if xa in self.terminal_states:
@@ -190,6 +193,7 @@ class Pickup(Action):
         self.models_path = config.BASE_FOLDER_SIM + environment + '_environment/models/'
         self.file_name_look_around_t_expected = self.models_path + 't_expected_{}'.format(file_name_look_around)
         Action.__init__(self, name, file_name, layer, environment, xa_values, nodegraph)
+        self.log = logging.getLogger(__name__)
 
     def initialize_t_expected(self, xa_values, nodegraph):
         # read t_expected(pickup if item is present) from file
@@ -288,7 +292,7 @@ class Pickup(Action):
         goal_u, goal_v = grid.get_cell_indices_by_position(goal_x, goal_y)
         return math.fabs(goal_u - gridmax_u) <= 1 and math.fabs(goal_v - gridmax_v) <= 1
 
-    def is_action_finished(self, s, item_map, b0=-1):
+    def is_action_finished(self, s, item_map, b0):
         xa = s['xa']
         item_type = auxiliary_functions.inverse_item_map(self.item_i, item_map)
         if s[item_type] == 'agent':
@@ -308,7 +312,7 @@ class Pickup(Action):
                 if b_max_idx > b_max:
                     b_max = b_max_idx
             if (b_max / self.start_max_belief) > (max(1.05, 0.9 / self.start_max_belief)):
-                print('PICKUP FINISHED, MAX BELIEF OVER 0.9')
+                self.log.info('pickup finihsed, max belief over 0.9')
                 return True, True
             else:
                 return False, False
@@ -319,6 +323,7 @@ class Pickup(Action):
 class Release(Action):
     def __init__(self, name, file_name, layer, environment, xa_values, nodegraph):
         Action.__init__(self, name, file_name, layer, environment, xa_values, nodegraph)
+        self.log = logging.getLogger(__name__)
 
     def initialize_t_expected(self, xa_values, nodegraph):
         # read from file
@@ -350,7 +355,6 @@ class Release(Action):
 
         dist = math.sqrt((item.goal_x - agent_x) ** 2 + (item.goal_y - agent_y) ** 2)
         dist_theta = auxiliary_functions.angle_consistency(theta_ref - agent_theta)
-        print('dist, dist_theta = {}, {}'.format(dist, dist_theta))
         if dist < config.robot_range - 0.1 and dist_theta < 0.2:
             goal_ref = 'release_item'
             return goal_ref
@@ -400,6 +404,7 @@ class LookAround(Action):
             value_list = [float(val) for val in obs_prob_values.split(' ')]
             for idx, value in enumerate(value_list):
                 self.observation_probabilities[idx] = value
+        self.log = logging.getLogger(__name__)
 
     def initialize_grids(self, xa_values, nodegraph, cell_width, cell_height, environment):
         for xa in xa_values:
@@ -459,19 +464,19 @@ class LookAround(Action):
         return
 
     def finish_action(self, s, item_present):
-        print('Action is finished')
+        self.log.info('Action is finished')
         Action.finish_action(self, s, item_present)
         for grid in self.node_grids:
             grid.set_all_seen_values(value=1)
 
-    def is_action_finished(self, s, item_map, b0=-1):
+    def is_action_finished(self, s, item_map, b0):
         xa = s['xa']
         # criteria 1: if the max_belief increased, finish
         if config.simulation_name == 'low_fidelity_simulation':
-            if b0 != -1 and self.start_max_belief > 0:
+            if self.start_max_belief > 0:
                 b_max = b0.get_max_belief_cell_value(xa)
                 if (b_max / self.start_max_belief) > (max(1.05, 0.9 / self.start_max_belief)):
-                    print('LOOKAROUND FINISHED, MAX BELIEF OVER 0.9')
+                    self.log.info(self.name + ' finished, max belief over 0.9')
                     return True, True
         # criteria 2: if at least 90 % of the cells were observed: finish
         nr_of_obs_cells = 0
@@ -481,11 +486,11 @@ class LookAround(Action):
                     nr_of_obs_cells += 1
         total_nr_of_cells = self.node_grids[xa].get_nr_of_free_cells()
         if nr_of_obs_cells / total_nr_of_cells > 0.9:
-            print('LOOKAROUND FINISHED, 90% OF CELLS OBSERVED')
+            self.log.info(self.name + ' finished, 90% of cells within this node are observed')
             return True, False
         # critera 3: if overall belief changed strongly enough
         if config.simulation_name == 'low_fidelity_simulation':
-            if b0 != -1 and self.start_max_belief > 0:
+            if self.start_max_belief > 0:
                 # get median belief
                 median_belief = b0.get_median_belief(node_nr=xa)
                 # get average of the highest belief cells
@@ -493,7 +498,7 @@ class LookAround(Action):
                 avr_max_belief = np.sum(max_belief_values) / len(max_belief_values)
                 if avr_max_belief - median_belief < (1 / 20.0) * (
                         self.initial_avr_max_belief - self.initial_median_belief):
-                    print('LOOKAROUND FINISHED, PEAK REDUCED BY {}'.format(
+                    self.log.info(self.name + ' finished, peak reduced by {}'.format(
                         (self.initial_avr_max_belief - self.initial_median_belief) / avr_max_belief - median_belief))
                     return True, False
         return False, False

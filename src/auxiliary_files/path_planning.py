@@ -2,6 +2,7 @@
 # This code is copied from  https://gist.github.com/jamiees2/5531924 and modified by myself
 import math
 import time
+import logging
 
 import numpy as np
 
@@ -168,6 +169,8 @@ def transition_cost_theta(node_i, node_j_key, cell_width, cell_height):
         cost = dist / config.robot_speed
     else:
         print('unexpected node_j_key')
+        log = logging.getLogger(__name__)
+        log.warning('unexpected node_j_key')
     return cost
 
 

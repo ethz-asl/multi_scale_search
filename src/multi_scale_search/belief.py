@@ -2,6 +2,7 @@ from __future__ import division  # required for standard float division in pytho
 
 import copy
 import math
+import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +13,7 @@ class BeliefGrid:
 
     # nr_of_items decides how many values a cell in the grid has (1 belief value per item)
     def __init__(self, nr_of_cells_x, nr_of_cells_y, nr_of_items, rec, init_val=0):
+        # self.log = logging.getLogger(__name__)
         self.nr_of_cells_x = int(nr_of_cells_x)
         self.nr_of_cells_y = int(nr_of_cells_y)
         self.nr_of_items = int(nr_of_items)
@@ -44,6 +46,7 @@ class BeliefGrid:
                             self.data[it_nr, v, u] = data[it_nr, v, u]
         else:
             print('BeliefGrid: data has wrong format')
+            logging.info('BeliefGrid: data has wrong format')
 
     def normalize_grid(self, total_belief_pre, total_belief_post=1, item_nr=0):
         if total_belief_pre == 0:
@@ -51,8 +54,10 @@ class BeliefGrid:
         else:
             try:
                 self.data[item_nr, :, :] *= (total_belief_post / total_belief_pre)
-            except RuntimeWarning:
+            except:
                 print('total_belief_post = {}, total_belief_pre = {}'.format(total_belief_post, total_belief_pre))
+                logging.info('total_belief_post = {}, total_belief_pre = {}'.format(total_belief_post, total_belief_pre))
+
 
     def get_belief_value(self, x, y, item_nr=0):
         u = int((x - self.rec.x0) / self.rec.width * self.nr_of_cells_x)
@@ -69,7 +74,6 @@ class BeliefGrid:
         u, v = self.get_uv(x, y)
         self.data[item_nr, v, u] = weight
 
-    # TODO: implement case 2 where after some time everything is back to initialization belief
     def update_belief(self, obs_x, obs_y, obs_val, item_nr, is_item_in_obs):
         obs_u, obs_v = self.get_uv_numpy(x_array=obs_x, y_array=obs_y)
         # create a copy of the data that is updated
@@ -128,6 +132,7 @@ class BeliefSpot:
 
 class Belief:
     def __init__(self, total_nr_of_cells, recs_beliefgrids, nr_of_items):
+        #self.log = logging.getLogger(__name__)
         self.nr_of_items = nr_of_items
         self.b_tot = [1.0] * nr_of_items  # may later be changed to > 1.0 to handle multiple items of the same kind
         self.belief_spots = []
@@ -160,15 +165,14 @@ class Belief:
             self.normalize_belief(item_nr=item_nr)
         else:
             print('type {} is not implemented yet'.format(type))
+            logging.info('type {} is not implemented yet'.format(type))
 
     def add_item(self):
         self.nr_of_items += 1
         self.b_tot.append(1.0)
         for bg in self.belief_grids:
             new_data = np.ones((1, bg.nr_of_cells_y, bg.nr_of_cells_x))
-            # print('bg.data.shape = {}'.format(bg.data.shape))
             bg.data = np.concatenate((bg.data, new_data), axis=0)
-            # print('new bg.data.shape = {}'.format(bg.data.shape))
         # normalize new belief variable
         self.normalize_belief(item_nr=self.nr_of_items - 1)
 
@@ -179,6 +183,7 @@ class Belief:
     def update_belief(self, observations):
         if len(observations) == 0:
             print('NO OBSERVATIONS')
+            logging.info('no observations')
             return
         # convert observations in appropriate format
         observations_np = np.array(observations)
@@ -191,7 +196,6 @@ class Belief:
         for item_nr in range(self.nr_of_items):
             is_item_in_obs[item_nr] = item_nr in obs_val
         belief_grids = copy.deepcopy(self.belief_grids)
-        # print([self.belief_grids[i].get_aggregated_belief(item_nr=0) for i in range(len(self.belief_grids))])
         for bg in belief_grids:
             # get all observations in bg and update belief grid of bg
             sel = bg.rec.are_points_in_rec(x_array=obs_x, y_array=obs_y)
@@ -205,12 +209,12 @@ class Belief:
             obs_val = obs_val[np.logical_not(sel)]
         # normalize entire belief grid
         self.normalize_belief(item_nr=-1, belief_grids=belief_grids)
-        # print([self.belief_grids[i].get_aggregated_belief(item_nr=0) for i in range(len(self.belief_grids))])
 
     # warning: this function reinitializes the belief with all the belief spots
     def add_belief_spot(self, mu_x, mu_y, prob, sigma, item_nr):
         if item_nr >= self.nr_of_items:
             print('you first need to add the item to the agent before you can set the belief')
+            logging.info('you first need to add the item to the agent before you can set the belief')
             return 'warning'
         self.belief_spots.append(BeliefSpot(mu_x, mu_y, prob, sigma, int(item_nr)))
         self.set_all_belief_spots()
@@ -303,7 +307,6 @@ class Belief:
     def get_aggregated_belief(self, rec_nr):
         belief_aggr = [0] * self.nr_of_items
         for i in range(self.nr_of_items):
-            # print('i={}, bg = {}'.format(i, self.belief_grids[rec_nr].get_aggregated_belief(item_nr=i)))
             belief_aggr[i] += self.belief_grids[rec_nr].get_aggregated_belief(item_nr=i)
         return np.array(belief_aggr)
 
@@ -353,6 +356,7 @@ class Belief:
 class BeliefRepresentation:
     # node_mapping is a dict with key = node_nr and value = list of rectangles indices belonging to that node
     def __init__(self, belief, nodes_recs_mapping):
+        # self.log = logging.getLogger(__name__)
         self.node_mapping = nodes_recs_mapping
         self.belief = belief
 

@@ -2,9 +2,11 @@ import argparse
 from src.low_fidelity_simulation.gui_low_fidelity_sim import GUI_LFS
 #import multi_scale_search as mss
 import config
-
+import logging
 
 def main(args):
+    logging.basicConfig(filename='infos.log', level=logging.INFO,
+                        format='%(levelname)s - %(name)s - %(asctime)s - %(message)s')
     if args.gui:
         config.init('low_fidelity_simulation')
         gui = GUI_LFS()

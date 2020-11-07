@@ -1,8 +1,9 @@
 import math
-
+import logging
 
 class Item:
     def __init__(self, item_type='none', x=-1, y=-1, u=-1, v=-1):
+        self.log = logging.getLogger(__name__)
         self.item_type = item_type
         self.x = x
         self.y = y
@@ -13,6 +14,7 @@ class Item:
         if self.x == -1 or self.y == -1:
             if self.u == -1 or self.v == -1 or cell_height == -1 or cell_width == -1:
                 print('ERROR: item is not initialized properly, need to know either (x,y) or (u,v)')
+                self.log.warning('ERROR: item is not initialized properly, need to know either (x,y) or (u,v)')
             else:
                 self.x = (self.u + 0.5) * cell_width
                 self.y = (self.v + 0.5) * cell_height

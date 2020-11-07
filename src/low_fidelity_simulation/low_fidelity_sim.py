@@ -1,5 +1,6 @@
 import math
 import random
+import logging
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -27,6 +28,7 @@ from src.low_fidelity_simulation.low_level_controller import ControllerLFS
 class LowFidelitySimulation:
 
     def __init__(self):
+        self.log = logging.getLogger(__name__)
         self.agent_type = 'FLAT'
         self.environment = 'small'
         self.world_grid, self.agent_grid = Grid(), Grid()
@@ -159,11 +161,12 @@ class LowFidelitySimulation:
                 self.history_actions[self.k] = robot_action
             self.history_carried = state[3]
             # print information of current timestep
-            if self.print_every_timestep:
-                print(
-                    'k = {},  time={},  ag_conf_old={},   ag_carry={},  deliv. items={},  action_value={}'.format(
+            msg = 'k = {},  time={},  ag_conf_old={},   ag_carry={},  deliv. items={},  action_value={}'.format(
                         self.k, self.history[self.k][0], (state[0], state[1], state[2]), state[3], state[4],
-                        self.history[self.k][2]))
+                        self.history[self.k][2])
+            if self.print_every_timestep:
+                print(msg)
+                self.log.info(msg)
             self.k += 1
 
         sol_quality = self.world.time
@@ -598,7 +601,6 @@ class LowFidelitySimulation:
                                    default_value='occupied', grid_name='big', default_seen=default_seen)
             # set room layout to world-grid and agent-grid
             for idx, rec in enumerate(rec_env):
-                # print('rec_nr={}, x0={}, y0={}, width={}, height={}\n'.format(idx, rec.x0, rec.y0, rec.width, rec.height))
                 self.world_grid.set_region(rec, 'free', y1_beh='bigger')
                 self.agent_grid.set_region(rec, 'free', y1_beh='bigger')
             rec_occupied = Rectangle(x0=0.6 + 9, y0=0.6 + 10.6, width=9, height=4)
@@ -609,6 +611,7 @@ class LowFidelitySimulation:
 
         else:
             print('environment type is not valid: {}'.format(self.environment))
+            self.log.warning('environment type is not valid: {}'.format(self.environment))
 
         self.controller = ControllerLFS(grid=self.agent_grid)
 
@@ -752,6 +755,7 @@ class LowFidelitySimulation:
                         c = 'brown'
                     else:
                         print('invalid item type')
+                        self.log.warning('invalid item type')
                     markersize = max(2, 5 - len(items_conf))
                     ax.plot(x, y, marker='s', markersize=markersize, color=c, label='x{}'.format(item_map[key]))
 

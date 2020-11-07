@@ -3,8 +3,9 @@ from __future__ import division
 import copy
 import os
 import time
-import xml.etree.ElementTree as ET
+import logging
 
+import xml.etree.ElementTree as ET
 import numpy as np
 
 import config
@@ -112,6 +113,7 @@ class AgentFLAT(Agent):
                 file_name_look_around='look_around.txt', xa_values=self.xa_values, nodegraph=self.nodegraph)
             self.action_names.append('pickup{}'.format(self.item_map[item_name]))
         self.subroutine_actions_history = {}
+        self.log = logging.getLogger(__name__)
 
     def start_solving(self):
         self.initialized = True
@@ -185,7 +187,7 @@ class AgentFLAT(Agent):
     def pos_to_node(self, x, y):
         node_nr = self.nodegraph.get_node_nr(x, y)
         if node_nr == -1:
-            print('error in pos_to_node mapping')
+            self.log.info('error in pos_to_node mapping')
         return node_nr
 
     def update_carry(self, o_carry, item_x=None, item_y=None):
@@ -233,7 +235,6 @@ class AgentFLAT(Agent):
         if self.current_action_name == 'look_around':
             self.subroutine_actions['look_around'].update_local_grid(self.s['xa'], o_cells)
         self.belief.update_belief(observations=o_cells_nrs)
-        # print('sum_belief item 1 = {}'.format(sum([self.b0.get_aggregated_belief(node_nr=i)[1] for i in range(self.nr_of_nodes)])))
 
     def choose_action(self):
         # check if task is already solved
@@ -275,9 +276,7 @@ class AgentFLAT(Agent):
             self.current_action_name = a_name
             self.subroutine_actions_history[self.k] = a_name
             print('action = {}'.format(a_name))
-            # for i in range(len(self.items)):
-            #    self.belief.draw_plot(agent_x=self.x, agent_y=self.y, item_nr=i, world_width=self.grid.total_width,
-            #        world_height=self.grid.total_height)
+            self.log.info('action = {}'.format(a_name))
             # execute subroutine
             a = self.subroutine_actions[a_name]
             goal_ref = a.subroutine(s=self.s, item_map=self.item_map, agent_x=self.x, agent_y=self.y,
@@ -308,6 +307,8 @@ class AgentFLAT(Agent):
                 V_best = V_p
                 a_best = self.alpha_vectors_attrib[sel, 1][idx]
         print('(V, a)=({}, {})'.format(V_best, a_best))
+        self.log.info('(V, a)=({}, {})'.format(V_best, a_best))
+
         return self.action_names[a_best]
 
     ## FUNCTIONS RELATED TO READING THE POLICY   ########################################################################
@@ -459,12 +460,10 @@ class AgentFLAT(Agent):
                     else:
                         belief_of_nodes[key] = 0.0
             # normalize belief
-            print('set_to_one={}, sum(belief_of_nodes={})'.format(set_to_one, sum(list(belief_of_nodes.values()))))
             b_sum = sum(list(belief_of_nodes.values()))
             if b_sum > 0.0:
                 for key in belief_of_nodes:
                     belief_of_nodes[key] /= b_sum
-                print('sum(belief_of_nodes={})'.format(sum(list(belief_of_nodes.values()))))
             for node_nr in range(nr_of_nodes):
                 prob = belief_of_nodes[node_nr]
                 belief_string += ' {}'.format(prob)
@@ -1111,6 +1110,7 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
         self.file_names_output = [
             config.BASE_FOLDER_SIM + self.environment + '_environment/input_output_files/MSM1_output_l{}.policy'.format(
                 1 + layer) for layer in range(self.nr_of_layers)]
+        self.log = logging.getLogger(__name__)
 
     def get_state_action_observation_sets(self, s_li, s_top, layer, a_name_top, nr_of_items):
         # create set S^l2, S_t^l2 and A^l2
@@ -1132,6 +1132,7 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
                 ni = n1
             else:
                 print('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
+                self.log.info('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
             xa_values_li = self.get_subnodes(node=ni, layer=layer - 1)
             # get all neighbour nodes
             neighbours = []
@@ -1328,6 +1329,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             config.BASE_FOLDER_SIM + self.environment + '_environment/input_output_files/MSM2_output_l{}.policy'.format(
                 1 + layer) for layer in range(self.nr_of_layers)]
         self.special_terminal_states = {}
+        self.log = logging.getLogger(__name__)
 
     def compute_policy(self, layer, a_name_top):
         xa_values_li, x_items_values_li, s_terminals_li, action_names_li, z_values_li = \
@@ -1432,6 +1434,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                 ni = n1
             else:
                 print('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
+                self.log.info('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
             xa_values_li = self.get_subnodes(node=ni, layer=layer - 1)
             # get all neighbour nodes
             neighbours = []
@@ -1984,6 +1987,7 @@ class AgentMultiScaleM3(AgentMultiScaleBasis):
             config.BASE_FOLDER_SIM + self.environment + '_environment/input_output_files/MSM3_output_l{}.policy'.format(
                 1 + layer) for layer in range(self.nr_of_layers)]
         self.special_terminal_states = {}
+        self.log = logging.getLogger(__name__)
 
     def compute_policy(self, layer, a_name_top):
         xa_values_li, x_items_values_li, s_terminals_li, action_names_li, z_values_li = \

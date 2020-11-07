@@ -3,8 +3,9 @@ from __future__ import division  # required for standard float division in pytho
 import copy
 import os
 import time
-import xml.etree.ElementTree as ET
+import logging
 
+import xml.etree.ElementTree as ET
 import numpy as np
 
 import config
@@ -59,6 +60,7 @@ class POMDPProblem(object):
 class NodeGraph(object):
     # node_recs is a dict with key = node_nr, value  = list of rectangles
     def __init__(self, nr_of_nodes=9, node_recs=None):
+        self.log = logging.getLogger(__name__)
         self.node_recs = node_recs
         # graph is dictionary with key = node-number and value = list of node-numbers the node is connected to
         self.graph = {}
@@ -71,6 +73,7 @@ class NodeGraph(object):
                 if rec.is_point_in_rec(x, y):
                     return item[0]
         print('invalid x,y = ({}, {}) input in NodeGraph.get_node_nr'.format(x, y))
+        self.log.info('invalid x,y = ({}, {}) input in NodeGraph.get_node_nr'.format(x, y))
         return -1
 
     def get_all_recs_as_flat_list(self):
@@ -149,6 +152,7 @@ class Agent(object):
 
     # conf0 is a tuple of x-position (world-coordinates), y-position, theta (robot-orientation)
     def __init__(self, grid=Grid(1, 1, 1, 1), pose0=(0, 0, 0), environment='Null'):
+        self.log = logging.getLogger(__name__)
         self.grid = grid
         self.x = pose0[0]
         self.y = pose0[1]
@@ -174,7 +178,6 @@ class Agent(object):
         self.belief = None
 
     def set_pose(self, x, y, theta, carry='none'):
-        print('x={}, y={}, theta={}, carry={}'.format(x, y, theta, carry))
         self.x = x
         self.y = y
         self.theta = theta
@@ -437,6 +440,7 @@ class AgentMultiScaleBasis(Agent):
             print(node_nr)
         if node_nr == -1:
             print('error in pos_to_node mapping')
+            self.log.warning('error in pos_to_node mapping')
             return -1
         else:
             return node_nr
@@ -465,6 +469,7 @@ class AgentMultiScaleBasis(Agent):
                 if var_lower in nodes_lower:
                     return node_top
         print('invalid layer_lower={}, var_lower={} input to var_lower_to_var_top()'.format(layer_lower, var_lower))
+        self.log.warning('invalid layer_lower={}, var_lower={} input to var_lower_to_var_top()'.format(layer_lower, var_lower))
 
     def var_lower_to_var_top_multiple_layers(self, layer_lower, var_lower, top_layer):
         if var_lower == 'agent' or var_lower == 'goal' or var_lower == 'not_here' or var_lower == '*':
@@ -504,6 +509,7 @@ class AgentMultiScaleBasis(Agent):
             self.items[self.item_map[item_type]].set_goal_xy(g_x, g_y, goal_nodes_layers)
         if not is_coherent:
             print('something went wrong when setting items')
+            self.log.warning('something went wrong when setting items')
             return 'error'
         else:
             return 'success'
@@ -550,6 +556,7 @@ class AgentMultiScaleBasis(Agent):
                     t_expected = self.subroutine_actions[a_lj + '0'].t_expected[1][s_lj[0]]
                 else:
                     print('uncovered case in reward_lj, s_lj = {}, a_lj = {}'.format(s_lj, a_lj))
+                    self.log.warning('uncovered case in reward_lj, s_lj = {}, a_lj = {}'.format(s_lj, a_lj))
             elif a_lj == 'release':
                 t_expected = self.subroutine_actions[a_lj].t_expected[s_lj[0]]
             elif a_lj == 'look_around':
@@ -557,8 +564,10 @@ class AgentMultiScaleBasis(Agent):
                     t_expected = self.subroutine_actions[a_lj].t_expected[0][s_lj[0]]
                 else:
                     print('uncovered case in rewardl2, s_lj = {}, a_lj = {}'.format(s_lj, a_lj))
+                    self.log.warning('uncovered case in rewardl2, s_lj = {}, a_lj = {}'.format(s_lj, a_lj))
             else:
                 print('uncovered case in reward_l2, a_lj = {}'.format(a_lj))
+                self.log.warning('uncovered case in reward_l2, a_lj = {}'.format(a_lj))
             return -t_expected
         else:
             if a_lj[0:3] == 'nav' and len(s_lj) > 1:
@@ -675,8 +684,6 @@ class AgentMultiScaleBasis(Agent):
             for line in f:
                 if line == '\n':
                     continue
-                # if layer == 1:
-                #     print(line)
                 line_list = line.split(";")
                 s = line_list[0].split()
                 s[0] = int(s[0])
@@ -842,6 +849,7 @@ class AgentMultiScaleBasis(Agent):
                 self.compute_observation_probabilities_for_all_layers()
             self.current_action_name_lN = a_name_lN
             print('a = {}'.format(self.a_names))
+            self.log.info('a = {}'.format(self.a_names))
             # execute subroutine
             a = self.subroutine_actions[a_name_lN]
             goal_ref = a.subroutine(s=self.s_layers[-1], item_map=self.item_map, agent_x=self.x, agent_y=self.y,
@@ -876,6 +884,7 @@ class AgentMultiScaleBasis(Agent):
                 s_top_next['xa'] = n0_top
             else:
                 print('something went wrong when determining s_top_next for layer{}'.format(layer))
+                self.log.warning('something went wrong when determining s_top_next for layer{}'.format(layer))
             # get a starting state for this layer in s_top_next
             s_copy = self.s_layers[layer].copy()
             s_copy['xa'] = self.get_subnodes(node=s_top_next['xa'], layer=top_layer)[0]
@@ -991,6 +1000,7 @@ class AgentMultiScaleBasis(Agent):
                 V_best = V_p
                 a_best = alpha_vectors_attrib[sel, 1][idx]
         print('(V, a)=({}, {})'.format(V_best, a_best))
+        self.log.info('(V, a)=({}, {})'.format(V_best, a_best))
         return action_names_li[a_best]
 
     def read_alpha_vectors(self, file_path, xa_values_li, x_items_values_li):

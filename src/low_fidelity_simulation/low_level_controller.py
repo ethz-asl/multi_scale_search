@@ -1,4 +1,5 @@
 import math
+import logging
 
 from src.auxiliary_files import path_planning
 from src.multi_scale_search import auxiliary_functions
@@ -7,6 +8,7 @@ from src.multi_scale_search import auxiliary_functions
 # Controller for the Low Fidelity Simulation (LFS)
 class ControllerLFS(object):
     def __init__(self, grid):
+        self.log = logging.getLogger(__name__)
         self.target_state = 'none'
         self.reference = []
         self.grid = grid
@@ -22,6 +24,7 @@ class ControllerLFS(object):
                 self.target_state = target_state
         else:
             print('Error in low_level_controller: target_state has wrong data type')
+            self.log.warning('Error in low_level_controller: target_state has wrong data type')
         if len(self.reference) > 0:
             ref_x, ref_y, ref_theta = self.reference.pop(0)
         else:
