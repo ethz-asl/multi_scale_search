@@ -14,7 +14,7 @@ from src.auxiliary_files.grid import Grid
 from src.auxiliary_files.item import Item
 from src.multi_scale_search.agents import AgentMultiScaleM1
 from src.multi_scale_search.agents import AgentMultiScaleM2
-# from agent_MultiScale_M3 import AgentMultiScaleM3
+from src.multi_scale_search.agents import AgentMultiScaleM3
 from src.auxiliary_files.rectangle import Rectangle
 from src.low_fidelity_simulation.worldmodel import WorldModel
 from src.multi_scale_search import auxiliary_functions
@@ -91,6 +91,9 @@ class LowFidelitySimulation:
                                            rec_env=self.rec_env, item_names=item_names, environment=self.environment)
         elif self.agent_type == 'MultiScaleAVP':
             self.agent = AgentMultiScaleM2(self.agent_grid, self.config0, nr_of_layers, node_mapping=node_mapping,
+                                           rec_env=self.rec_env, item_names=item_names, environment=self.environment)
+        elif self.agent_type == 'MultiScaleVP':
+            self.agent = AgentMultiScaleM3(self.agent_grid, self.config0, nr_of_layers, node_mapping=node_mapping,
                                            rec_env=self.rec_env, item_names=item_names, environment=self.environment)
 
         # if self.agent_type == 'b1':
@@ -435,7 +438,7 @@ class LowFidelitySimulation:
 
         anim = animation.FuncAnimation(fig1, animate, init_func=init, frames=len(self.history_x_values.keys()),
                                        interval=100, repeat_delay=500, blit=True)
-        anim.save('animation.mp4')
+        # anim.save('animation.mp4')
 
     def draw_entire_game(self):
         fig = plt.figure()

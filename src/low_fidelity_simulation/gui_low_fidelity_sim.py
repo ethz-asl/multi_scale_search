@@ -177,7 +177,8 @@ class GUI_LFS:
                                          font=('Arial', 12))
         self.lbl_testscenario.grid(column=0, row=3, sticky='w')
         self.cb_testscenario = ttk.Combobox(master=self.evaluation_frame, width=12)
-        self.cb_testscenario['values'] = ('scenario 01', 'scenario 02', 'scenario 03', 'scenario 04', 'scenario 05', 'corner case 01')
+        self.cb_testscenario['values'] = ('scenario 01', 'scenario 02', 'scenario 03', 'scenario 04', 'scenario 05',
+                                          'corner case 01', 'corner case 02')
         self.cb_testscenario.grid(column=1, row=3)
         self.btn_testscenario = tk.Button(self.evaluation_frame, text='set test scenario',
                                           command=lambda: self.__btn_set_test_scenario())
@@ -441,10 +442,25 @@ class GUI_LFS:
             init_y = [24.0]
             goal_x = [17.0]
             goal_y = [9.0]
-            belief_types = ['mug', 'mug', 'mug', 'mug']
+            belief_types = ['mug', 'mug', 'mug']
             b_x = [10.0, 23.0, 3.0, 3.4]
             b_y = [23.0, 6.0, 15.0, 4.8]
             b_p = [0.2, 0.3, 0.2, 0.15]
+
+        elif test_scenario == 'corner case 02':
+            self.cb_env.set('big')
+            ag_x, ag_y = 11.0, 10
+            belief_spot_sigma = 0.05
+            nr_of_items = 1
+            item_types = ['mug']
+            init_x = [13.5]
+            init_y = [10.0]
+            goal_x = [20.0]
+            goal_y = [14.7]
+            belief_types = ['mug']
+            b_x = [13.5]
+            b_y = [10.0]
+            b_p = [0.8]
 
         else:
             messagebox.showinfo('Error', 'invalid test-scenario')

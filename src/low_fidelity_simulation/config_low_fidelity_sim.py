@@ -6,9 +6,9 @@ simulation_name = 'low_fidelity_simulation'
 BASE_FOLDER_SIM = os.path.dirname(os.path.abspath(__file__)) + '/'
 solving_precision = 0.01
 # note: AP corresponds to Action Propagation, AVP to Action-Value-Propagation, VP to Value-Propagation
-agent_types = ['FLAT', 'MultiScaleAP', 'MultiScaleAVP']
-POMDP_agent_types = ['FLAT', 'MultiScaleAP', 'MultiScaleAVP']
-multiscale_agent_types = ['MultiScaleAP', 'MultiScaleAVP']
+agent_types = ['FLAT', 'MultiScaleAP', 'MultiScaleAVP', 'MultiScaleVP']
+POMDP_agent_types = ['FLAT', 'MultiScaleAP', 'MultiScaleAVP', 'MultiScaleVP']
+multiscale_agent_types = ['MultiScaleAP', 'MultiScaleAVP', 'MultiScaleVP']
 robot_range = 1.0
 item_types = ['mug', 'plate', 'milk', 'donut']
 grid_ref_width = 14.0

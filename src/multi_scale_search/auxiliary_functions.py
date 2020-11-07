@@ -15,19 +15,6 @@ def get_discount_factor(environment_type):
     return 0.999
 
 
-def get_timeout_time(environment_type, solver_type):
-    if config.simulation_name == 'low_fidelity_simulation':
-        if environment_type == 'small':
-            if solver_type in config.multiscale_agent_types:
-                return 5.0
-            else:
-                return 5.0
-        elif environment_type == 'big':
-            if solver_type in config.multiscale_agent_types:
-                return 10.0
-            else:
-                return 10.0
-
 
 def get_pickup_reward(environment_type):
     if environment_type == 'small':
@@ -43,11 +30,16 @@ def get_delivery_reward(environment_type):
         return 250
 
 
-def get_penalty_reward(environment_type):
+def get_penalty_reward(environment_type, layer):
     if environment_type == 'small':
         return -5.0
     elif environment_type == 'big':
-        return -0.0
+        if layer == 1:
+            return -20.0
+        elif layer == 2:
+            return -10.0
+        else:
+            print('invalid input arguments env={}, layer={}'.format(environment_type, layer))
 
 
 def get_agent_types(environment_type='small'):

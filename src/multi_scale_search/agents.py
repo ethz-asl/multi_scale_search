@@ -1,23 +1,25 @@
 from __future__ import division
-from src.multi_scale_search.core import Agent
-from src.multi_scale_search.core import AgentMultiScaleBasis
-from src.auxiliary_files.grid import Grid
-from src.multi_scale_search.core import NodeGraph
-from src.multi_scale_search.belief import Belief
-from src.multi_scale_search.belief import BeliefRepresentation
-from src.multi_scale_search.actions import Navigate
-from src.multi_scale_search.actions import LookAround
-from src.multi_scale_search.actions import Release
-from src.multi_scale_search.actions import Pickup
-from src.multi_scale_search import auxiliary_functions
-from src.multi_scale_search.core import POMDPProblem
-import config
 
-import numpy as np
 import copy
 import os
 import time
 import xml.etree.ElementTree as ET
+
+import numpy as np
+
+import config
+from src.auxiliary_files.grid import Grid
+from src.multi_scale_search import auxiliary_functions
+from src.multi_scale_search.actions import LookAround
+from src.multi_scale_search.actions import Navigate
+from src.multi_scale_search.actions import Pickup
+from src.multi_scale_search.actions import Release
+from src.multi_scale_search.belief import Belief
+from src.multi_scale_search.belief import BeliefRepresentation
+from src.multi_scale_search.core import Agent
+from src.multi_scale_search.core import AgentMultiScaleBasis
+from src.multi_scale_search.core import NodeGraph
+from src.multi_scale_search.core import POMDPProblem
 
 
 class Item:
@@ -68,11 +70,11 @@ class AgentFLAT(Agent):
             self.items.append(Item(name=item_name, x=-1, y=-1))
         # solving related variables ####################################################################################
         node_rec_mapping = auxiliary_functions.get_nodes_recs_mapping(layer=self.layer, nr_of_layers=self.layer + 1,
-                                                         node_mapping=-1, nodegraph_lN=self.nodegraph)
+                                                                      node_mapping=-1, nodegraph_lN=self.nodegraph)
         self.timeout_time = 5.0
         # initialize belief grid
         self.belief = Belief(
-            total_nr_of_cells=10000 * (grid.total_width*grid.total_height)/
+            total_nr_of_cells=10000 * (grid.total_width * grid.total_height) /
                               (config.grid_ref_width * config.grid_ref_height),
             recs_beliefgrids=self.nodegraph.get_all_recs_as_flat_list(), nr_of_items=len(item_names))
         self.b0 = BeliefRepresentation(self.belief, nodes_recs_mapping=node_rec_mapping)
@@ -106,7 +108,7 @@ class AgentFLAT(Agent):
         for item_name in item_names:
             action_name = 'pickup{}'.format(self.item_map[item_name])
             self.subroutine_actions[action_name] = Pickup(
-                    name=action_name, file_name='pickup.txt', layer=self.layer, environment=self.environment,
+                name=action_name, file_name='pickup.txt', layer=self.layer, environment=self.environment,
                 file_name_look_around='look_around.txt', xa_values=self.xa_values, nodegraph=self.nodegraph)
             self.action_names.append('pickup{}'.format(self.item_map[item_name]))
         self.subroutine_actions_history = {}
@@ -130,15 +132,17 @@ class AgentFLAT(Agent):
         if item_type not in self.item_map:
             self.s[item_type] = -1
             self.item_map[item_type] = len(self.items)
-            self.items.append(Item(name=item_type, x=-1, y=-1, goal_x=goal_x, goal_y=goal_y, goal_node=self.pos_to_node(goal_x, goal_y)))
+            self.items.append(Item(name=item_type, x=-1, y=-1, goal_x=goal_x, goal_y=goal_y,
+                                   goal_node=self.pos_to_node(goal_x, goal_y)))
             self.nr_of_items = len(self.items)
             self.belief.add_item()
             # add pickup action for the item
             action_name = 'pickup{}'.format(self.item_map[item_type])
             self.subroutine_actions[action_name] = Pickup(
-                    name=action_name, file_name='pickup' + '_l{}_env{}.txt'.format(self.nr_of_layers, self.environment),
-                    layer=self.layer, file_name_look_around='look_around' + '_l{}_env{}.txt'.format(self.nr_of_layers, self.environment),
-                    xa_values=self.xa_values, nodegraph=self.nodegraph)
+                name=action_name, file_name='pickup' + '_l{}_env{}.txt'.format(self.nr_of_layers, self.environment),
+                layer=self.layer,
+                file_name_look_around='look_around' + '_l{}_env{}.txt'.format(self.nr_of_layers, self.environment),
+                xa_values=self.xa_values, nodegraph=self.nodegraph)
             self.action_names.append(action_name)
 
     def set_task(self, task):
@@ -223,13 +227,13 @@ class AgentFLAT(Agent):
         o_cells_nrs = []
         for o_cell in o_cells:
             if o_cell.obs_val in config.item_types:
-                o_cells_nrs.append([ o_cell.x, o_cell.y, self.item_map[o_cell.obs_val] ])
+                o_cells_nrs.append([o_cell.x, o_cell.y, self.item_map[o_cell.obs_val]])
             else:
-                o_cells_nrs.append([ o_cell.x, o_cell.y, o_cell.obs_val ])
+                o_cells_nrs.append([o_cell.x, o_cell.y, o_cell.obs_val])
         if self.current_action_name == 'look_around':
             self.subroutine_actions['look_around'].update_local_grid(self.s['xa'], o_cells)
         self.belief.update_belief(observations=o_cells_nrs)
-        #print('sum_belief item 1 = {}'.format(sum([self.b0.get_aggregated_belief(node_nr=i)[1] for i in range(self.nr_of_nodes)])))
+        # print('sum_belief item 1 = {}'.format(sum([self.b0.get_aggregated_belief(node_nr=i)[1] for i in range(self.nr_of_nodes)])))
 
     def choose_action(self):
         # check if task is already solved
@@ -245,7 +249,7 @@ class AgentFLAT(Agent):
             print('*************************** task is finished ******************************')
             print('***************************************************************************')
             print('\n')
-            goal_ref = 'finished' # ('finished', (self.x, self.y, self.theta))
+            goal_ref = 'finished'  # ('finished', (self.x, self.y, self.theta))
             return goal_ref
         self.k += 1
         a_name = self.current_action_name
@@ -253,8 +257,8 @@ class AgentFLAT(Agent):
             a = self.subroutine_actions[a_name]
             # execute subroutine
             goal_ref = a.subroutine(s=self.s, item_map=self.item_map, agent_x=self.x, agent_y=self.y,
-                                        agent_theta=self.theta, grid=self.grid, nodegraph=self.nodegraph,
-                                        items=self.items, b0=self.b0)
+                                    agent_theta=self.theta, grid=self.grid, nodegraph=self.nodegraph,
+                                    items=self.items, b0=self.b0)
         if a_name == 'none' or goal_ref == 'finished':
             t0 = time.time()
             a_name = self.compute_policy(self.nr_of_nodes, self.action_names)
@@ -277,8 +281,8 @@ class AgentFLAT(Agent):
             # execute subroutine
             a = self.subroutine_actions[a_name]
             goal_ref = a.subroutine(s=self.s, item_map=self.item_map, agent_x=self.x, agent_y=self.y,
-                                        agent_theta=self.theta, grid=self.grid, nodegraph=self.nodegraph,
-                                        items=self.items, b0=self.b0)
+                                    agent_theta=self.theta, grid=self.grid, nodegraph=self.nodegraph,
+                                    items=self.items, b0=self.b0)
             t1 = time.time()
             self.computation_time_for_each_action.append(t1 - t0)
             self.computation_time += self.computation_time_for_each_action[-1]
@@ -326,7 +330,7 @@ class AgentFLAT(Agent):
             self.alpha_vectors[idx, :] = values
 
     def get_belief_for_every_state(self, nr_of_nodes):
-        b_of_s = np.zeros((nr_of_nodes+2, len(self.items)))
+        b_of_s = np.zeros((nr_of_nodes + 2, len(self.items)))
         for n in range(nr_of_nodes):
             b_of_s[n] = self.b0.get_aggregated_belief(node_nr=n)
         b_agent, b_goal = [], []
@@ -336,14 +340,14 @@ class AgentFLAT(Agent):
             b_goal.append(float(self.s[item_type] == 'goal'))
         b_of_s[-2] = b_agent
         b_of_s[-1] = b_goal
-        belief_enumerated = np.zeros(((nr_of_nodes+2)**len(self.items)))
+        belief_enumerated = np.zeros(((nr_of_nodes + 2) ** len(self.items)))
         for s_i in range(len(belief_enumerated)):
             b = 1.0
             s_i_copy = s_i
-            for item_nr in range(len(self.items)-1, -1, -1):
-                xi = int(s_i_copy / ((nr_of_nodes+2)**(item_nr)))
-                s_i_copy = s_i_copy % ((nr_of_nodes+2)**(item_nr))
-                b *= b_of_s[xi][len(self.items)-1-item_nr]
+            for item_nr in range(len(self.items) - 1, -1, -1):
+                xi = int(s_i_copy / ((nr_of_nodes + 2) ** (item_nr)))
+                s_i_copy = s_i_copy % ((nr_of_nodes + 2) ** (item_nr))
+                b *= b_of_s[xi][len(self.items) - 1 - item_nr]
             belief_enumerated[s_i] = b
         return belief_enumerated
 
@@ -447,7 +451,7 @@ class AgentFLAT(Agent):
                 if belief_of_nodes[xa] > self.b0_threshold:
                     set_to_one = True
                 elif belief_of_nodes[xa] < 1 - self.b0_threshold:
-                        belief_of_nodes[xa] = 0.0
+                    belief_of_nodes[xa] = 0.0
             if set_to_one:
                 for key in belief_of_nodes:
                     if belief_of_nodes[key] > self.b0_threshold:
@@ -561,7 +565,7 @@ class AgentFLAT(Agent):
                 ag2 += 1
                 if ag2 == len(self.items):
                     ag1 += 1
-                    ag2 = ag1+1
+                    ag2 = ag1 + 1
                     if ag2 == len(self.items):
                         break
 
@@ -623,7 +627,7 @@ class AgentFLAT(Agent):
                 instance_string += ' -'
                 prob_table = ['0.0'] * (nr_of_nodes * (nr_of_nodes + 2))
                 prob_table_string = ''
-                instance = [0, 0]   # instance[0] = xa_0, instance[1] = xi_1
+                instance = [0, 0]  # instance[0] = xa_0, instance[1] = xi_1
                 for idx in prob_table:
                     if instance[0] == self.items[item_idx].goal_node and instance[1] == 'goal':
                         prob_table_string += ' 1.0'
@@ -632,8 +636,8 @@ class AgentFLAT(Agent):
                     else:
                         prob_table_string += ' 0.0'
                     # increase instance by 1
-                    for k in range(len(instance)-1, -1, -1):
-                        if instance[k] == nr_of_nodes-1:
+                    for k in range(len(instance) - 1, -1, -1):
+                        if instance[k] == nr_of_nodes - 1:
                             instance[k] = 'agent'
                             break
                         elif instance[k] == 'agent':
@@ -707,7 +711,7 @@ class AgentFLAT(Agent):
         # prob table
         prob_table_string = ''
         instance = [0, 0, 0]
-        nr_of_states = nr_of_nodes * (nr_of_nodes + 2)**2
+        nr_of_states = nr_of_nodes * (nr_of_nodes + 2) ** 2
         for state_nr in range(nr_of_states):
             if instance[0] == instance[1] and instance[2] == 'agent':
                 prob_table_string += ' 1.0'
@@ -720,8 +724,8 @@ class AgentFLAT(Agent):
             else:
                 prob_table_string += ' 0.0'
             # increase instance by 1
-            for k in range(len(instance)-1, -1, -1):
-                if instance[k] == nr_of_nodes-1:
+            for k in range(len(instance) - 1, -1, -1):
+                if instance[k] == nr_of_nodes - 1:
                     instance[k] = 'agent'
                     break
                 elif instance[k] == 'agent':
@@ -773,7 +777,7 @@ class AgentFLAT(Agent):
                     i, j = auxiliary_functions.nav_action_get_n0(a), auxiliary_functions.nav_action_get_n1(a)
                     # general rule: prob. of observing zi = no is 1 for all states
                     instance_string = 'a{} * * -'.format(a)
-                    prob_table_string = '1.0'   # prob. 1 of observing "no"
+                    prob_table_string = '1.0'  # prob. 1 of observing "no"
                     for node_nr in range(nr_of_nodes):
                         prob_table_string += ' 0.0'
                     prob_table_string += ' 0.0'
@@ -795,12 +799,13 @@ class AgentFLAT(Agent):
                     instance_string = 'a{} - - -'.format(a)
                     prob_table_string = ''
                     for idx_xa in range(nr_of_nodes):
-                        for idx_xk in range(2+nr_of_nodes):
-                            for idx_zk in range(2+nr_of_nodes):
-                                if idx_xa == idx_xk and idx_xa+1 == idx_zk:
+                        for idx_xk in range(2 + nr_of_nodes):
+                            for idx_zk in range(2 + nr_of_nodes):
+                                if idx_xa == idx_xk and idx_xa + 1 == idx_zk:
                                     value = '{}'.format(self.subroutine_actions[a].observation_probabilities[idx_xa])
                                 elif idx_xa == idx_xk and idx_zk == 0:
-                                    value = '{}'.format(1 - self.subroutine_actions[a].observation_probabilities[idx_xa])
+                                    value = '{}'.format(
+                                        1 - self.subroutine_actions[a].observation_probabilities[idx_xa])
                                 elif idx_xk == nr_of_nodes and idx_zk == 1 + nr_of_nodes:
                                     value = '1.0'
                                 elif idx_zk == 0 and idx_xk != nr_of_nodes:
@@ -826,7 +831,7 @@ class AgentFLAT(Agent):
         instance_string = 'a{} s{} - -'.format(a, i)
         prob_table_string = ''
         # loop over all item positions:
-        for idx_xk in range(2+nr_of_nodes):
+        for idx_xk in range(2 + nr_of_nodes):
             # loop over all observation values
             for idx_zk in range(2 + nr_of_nodes):
                 if a in self.subroutine_actions_history.values():
@@ -838,7 +843,7 @@ class AgentFLAT(Agent):
                         value = '0.0'
                 elif idx_xk + 1 == idx_zk and idx_xk != nr_of_nodes:
                     value = '{}'.format(self.subroutine_actions[a].observation_probabilities[i][idx_xk])
-                elif idx_zk == 0 and idx_xk != nr_of_nodes and idx_xk != nr_of_nodes+1:
+                elif idx_zk == 0 and idx_xk != nr_of_nodes and idx_xk != nr_of_nodes + 1:
                     value = '{}'.format(1 - self.subroutine_actions[a].observation_probabilities[i][idx_xk])
                 elif idx_xk == nr_of_nodes and idx_zk == nr_of_nodes + 1:
                     value = '1.0'
@@ -878,7 +883,7 @@ class AgentFLAT(Agent):
                 for item_idx in range(len(self.items)):
                     instance_string += ' -'
                 value_table_string = ''
-                for state_nr in range(nr_of_nodes * (nr_of_nodes+2)**(len(self.items))):
+                for state_nr in range(nr_of_nodes * (nr_of_nodes + 2) ** (len(self.items))):
                     state = self.deenumerate_state(s_i=state_nr, nr_of_nodes=nr_of_nodes)
                     is_item_present = False
                     for s_i in state[1:]:
@@ -900,7 +905,7 @@ class AgentFLAT(Agent):
                 value_table_string = ''
                 for xa in self.xa_values:
                     for xi in range(2 + nr_of_nodes):
-                        if xa == xi or (xa == self.items[i].goal_node and xi == nr_of_nodes+1):
+                        if xa == xi or (xa == self.items[i].goal_node and xi == nr_of_nodes + 1):
                             value_table_string += ' -{}'.format(self.subroutine_actions[a].t_expected[1][xa])
                         elif xi == nr_of_nodes:
                             value_table_string += ' -1.0'
@@ -930,7 +935,7 @@ class AgentFLAT(Agent):
                             value_table_string += ' -{}'.format(config.robot_release_time)
                     self.write_entry_valuetable(f, instance_string, value_table_string)
         # reward 0 if all items in goal-location (terminal state)
-        instance_string = '* *'     # for all actions and all xa
+        instance_string = '* *'  # for all actions and all xa
         for i in range(len(self.items)):
             instance_string += ' goal'
         self.write_entry_valuetable(f, instance_string, value_table_string='0.0')
@@ -953,7 +958,7 @@ class AgentFLAT(Agent):
 
         # for each item, picking item up
         for item_idx in range(len(self.items)):
-            instance_string = 'apickup{} *'.format(item_idx)   # for pickupi action and xa in relation to xi
+            instance_string = 'apickup{} *'.format(item_idx)  # for pickupi action and xa in relation to xi
             for k in range(2):
                 for item_idx2 in range(len(self.items)):
                     if item_idx == item_idx2 and k == 0:
@@ -970,18 +975,18 @@ class AgentFLAT(Agent):
 
         # releasing item:
         for item_idx in range(len(self.items)):
-            instance_string = 'arelease *'    # for release action and all xa
+            instance_string = 'arelease *'  # for release action and all xa
             for item_idx2 in range(len(self.items)):
                 if item_idx == item_idx2:
                     instance_string += ' agent'
                 else:
                     instance_string += ' *'
             for item_idx2 in range(len(self.items)):
-                instance_string += ' *'     # FOR RELEASING IN SUBTASK IT DOES NOT MATTER WHAT NEXT STATE IS
+                instance_string += ' *'  # FOR RELEASING IN SUBTASK IT DOES NOT MATTER WHAT NEXT STATE IS
             self.write_entry_valuetable(f, instance_string, value_table_string='-20.0')
 
         # reward 0 if all items in goal-location (terminal state)
-        instance_string = '* *'     # for all actions and all xa
+        instance_string = '* *'  # for all actions and all xa
         for item_idx in range(len(self.items)):
             instance_string += ' goal'
         for item_idx in range(len(self.items)):
@@ -1033,7 +1038,7 @@ class AgentFLAT(Agent):
                     instance_string += ' *'
             self.write_entry_valuetable(f, instance_string, value_table_string='-100.0')
         # reward 0 if all items in goal-location (terminal state)
-        instance_string = '* *'     # for all actions and all xa
+        instance_string = '* *'  # for all actions and all xa
         for item_idx in range(len(self.items)):
             instance_string += ' goal'
         for item_idx in range(len(self.items)):
@@ -1068,17 +1073,17 @@ class AgentFLAT(Agent):
                 ag2 += 1
                 if ag2 == len(self.items):
                     ag1 += 1
-                    ag2 = ag1+1
+                    ag2 = ag1 + 1
                     if ag2 == len(self.items):
                         break
 
     # careful: the state consists only of numbers, variable value 'agent' corresponds to the number nr_of_nodes
     def deenumerate_state(self, s_i, nr_of_nodes):
         s_i_copy = s_i
-        s = [0] * (1+len(self.items))
+        s = [0] * (1 + len(self.items))
         for i in range(len(s)):
-            s[i] = int(s_i_copy / ((2+nr_of_nodes)**(len(self.items)-i)))
-            s_i_copy = s_i_copy % ((2+nr_of_nodes)**(len(self.items)-i))
+            s[i] = int(s_i_copy / ((2 + nr_of_nodes) ** (len(self.items) - i)))
+            s_i_copy = s_i_copy % ((2 + nr_of_nodes) ** (len(self.items) - i))
         return np.array(s)
 
     def write_entry_probtable(self, f, instance_string, prob_table_string):
@@ -1108,14 +1113,15 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
 
     def get_state_action_observation_sets(self, s_li, s_top, layer, a_name_top, nr_of_items):
         # create set S^l2, S_t^l2 and A^l2
-        xa_values_li, x_items_values_li = [], {}    #x_items_value_l2 = {item_nr: [item_values]}
-        s_terminals_li = []    # [{'xa':.., 0:.., ..}, {..}, ...]
+        xa_values_li, x_items_values_li = [], {}  # x_items_value_l2 = {item_nr: [item_values]}
+        s_terminals_li = []  # [{'xa':.., 0:.., ..}, {..}, ...]
         action_names_li = []
-        z_values_li = {}    # key = item_nr, value = list of values
+        z_values_li = {}  # key = item_nr, value = list of values
         if layer == 0:
             return self.get_state_action_observation_sets_l0(s_li, nr_of_items)
         elif a_name_top[0:3] == 'nav':
-            n0, n1 = auxiliary_functions.nav_action_get_n0(a_name_top), auxiliary_functions.nav_action_get_n1(a_name_top)
+            n0, n1 = auxiliary_functions.nav_action_get_n0(a_name_top), auxiliary_functions.nav_action_get_n1(
+                a_name_top)
             ni, nj = -1, -1
             if s_top['xa'] == n0:
                 ni = n0
@@ -1124,8 +1130,8 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
                 nj = n0
                 ni = n1
             else:
-                print('action a_l{}={} is not available in s_l{}={}'.format(layer-1, a_name_top, layer-1, s_top))
-            xa_values_li = self.get_subnodes(node=ni, layer=layer-1)
+                print('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
+            xa_values_li = self.get_subnodes(node=ni, layer=layer - 1)
             # get all neighbour nodes
             neighbours = []
             for n in xa_values_li:
@@ -1134,29 +1140,29 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
             neighbours = list(set(neighbours))
             # add all neighbours that are in n^l1_j to xa_values_l2 and xa_terminals_l2
             for n in neighbours:
-                if n in self.get_subnodes(node=nj, layer=layer-1):
+                if n in self.get_subnodes(node=nj, layer=layer - 1):
                     xa_values_li.append(n)
                     s_terminal = {'xa': [n]}
                     for item_idx in range(nr_of_items):
                         s_terminal[item_idx] = ['none']
                     s_terminals_li.append(s_terminal)
             action_names_li = self.nodegraphs_layers[layer].get_nav_actions_for_nodes(
-                nodes=self.get_subnodes(node=ni, layer=layer-1), nodes_restriction=xa_values_li)
+                nodes=self.get_subnodes(node=ni, layer=layer - 1), nodes_restriction=xa_values_li)
         elif a_name_top[0:6] == 'pickup':
             item_idx = int(a_name_top[6])
             item_type = self.inverse_item_map(item_idx)
-            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1)
+            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
             xi_values_li, zi_values_li = [], []
             if s_top[item_type] == 'agent':
                 xi_values_li = ['agent']
             elif s_top[item_type] == 'goal':
-                if self.items[item_idx].goal_nodes_layers[layer-1] == s_top['xa']:
+                if self.items[item_idx].goal_nodes_layers[layer - 1] == s_top['xa']:
                     xi_values_li = ['agent', 'goal']
                 else:
                     xi_values_li = ['goal']
             else:
-                xi_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['not_here', 'agent']
-                zi_values_li = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['agent']
+                xi_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['not_here', 'agent']
+                zi_values_li = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['agent']
             x_items_values_li[item_idx] = xi_values_li
             z_values_li[item_idx] = zi_values_li
             s_terminal = {'xa': ['*']}
@@ -1176,18 +1182,18 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
                 item_type = self.inverse_item_map(item_idx2)
                 if s_top[item_type] == 'agent':
                     item_idx = item_idx2
-            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1)
-            terminal_var_list = self.get_subnodes(node=s_top['xa'], layer=layer-1)
-            x_items_values_li[item_idx] = self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['agent']
+            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
+            terminal_var_list = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
+            x_items_values_li[item_idx] = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['agent']
             if self.items[item_idx].goal_nodes_layers[layer] in terminal_var_list:
                 x_items_values_li[item_idx] += ['goal']
                 terminal_var_list += ['goal']
                 if self.items[item_idx].goal_nodes_layers[layer] in x_items_values_li:
                     x_items_values_li[item_idx].remove(self.items[item_idx].goal_nodes_layers[layer])
                     terminal_var_list.remove(self.items[item_idx].goal_nodes_layers[layer])
-            z_values_li[item_idx] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['agent']
+            z_values_li[item_idx] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['agent']
             for x_item_value in terminal_var_list:
-                s_terminal = {'xa': self.get_subnodes(node=s_top['xa'], layer=layer-1)}
+                s_terminal = {'xa': self.get_subnodes(node=s_top['xa'], layer=layer - 1)}
                 for item_idx2 in range(nr_of_items):
                     if item_idx2 == item_idx:
                         s_terminal[item_idx2] = [x_item_value]
@@ -1239,8 +1245,8 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
             f.write("\t\t\t<Parameter type = \"TBL\">\n")
             # write instance for transfering to the terminal states ####################################################
             for s_terminal in s_terminals_li:
-                instance_string = '*'   # for any action
-                instance_string += ' *' # for any starting xa
+                instance_string = '*'  # for any action
+                instance_string += ' *'  # for any starting xa
                 for item_idx in range(self.nr_of_items):
                     if item_idx in x_items_values_li.keys():
                         instance_string += ' *'
@@ -1262,7 +1268,7 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
             # 0 reward for starting and staying in terminal state ######################################################
             for s_terminal in s_terminals_li:
                 instance_string = '*'
-                key_list = ['xa'] + list(range(0,self.nr_of_items))
+                key_list = ['xa'] + list(range(0, self.nr_of_items))
                 for var_key in key_list:
                     if var_key in s_terminal.keys():
                         var_t = s_terminal[var_key]
@@ -1297,9 +1303,9 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
         # read Value from POMDP next
         V_best = -100000
         sel = self.get_alpha_vectors_selection(s_terminal, self.POMDPs[layer]['next'].xa_values,
-                                                   self.POMDPs[layer]['next'].x_items_values,
-                                                   self.POMDPs[layer]['next'].z_values,
-                                                   self.POMDPs[layer]['next'].alpha_vectors_attrib)
+                                               self.POMDPs[layer]['next'].x_items_values,
+                                               self.POMDPs[layer]['next'].z_values,
+                                               self.POMDPs[layer]['next'].alpha_vectors_attrib)
         for idx, vector in enumerate(self.POMDPs[layer]['next'].alpha_vectors[sel]):
             V_p = np.dot(vector, belief_enumerated_next)
             if V_p > V_best:
@@ -1323,13 +1329,13 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
 
     def compute_policy(self, layer, a_name_top):
         xa_values_li, x_items_values_li, s_terminals_li, action_names_li, z_values_li = \
-            self.get_state_action_observation_sets(self.s_layers[layer], self.s_layers[layer-1], layer, a_name_top,
+            self.get_state_action_observation_sets(self.s_layers[layer], self.s_layers[layer - 1], layer, a_name_top,
                                                    len(self.items))
         if layer > 0:
             POMDP_key = self.var_lower_to_var_top(layer, self.s_layers[layer]['xa'])
         else:
             POMDP_key = 'all'
-        if len(self.POMDPs) >= layer+1:
+        if len(self.POMDPs) >= layer + 1:
             self.POMDPs[layer][POMDP_key].set_variable_sets(
                 xa_values_li, x_items_values_li, s_terminals_li, z_values_li, action_names_li)
         else:
@@ -1340,7 +1346,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         if layer > 0:
             for s_terminal in s_terminals_li:
                 if s_terminal['xa'][0] != '*' and s_terminal['xa'][0] not in \
-                        self.get_subnodes(node=self.s_layers[layer-1]['xa'], layer=layer-1):
+                        self.get_subnodes(node=self.s_layers[layer - 1]['xa'], layer=layer - 1):
                     xa_top_next = self.var_lower_to_var_top(layer_lower=layer, var_lower=s_terminal['xa'][0])
                 else:
                     continue
@@ -1360,7 +1366,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             s_top_next['xa'] = xa_top_next
             # get a starting state for this layer in s_top_next
             s_copy = self.s_layers[layer].copy()
-            s_copy['xa'] = self.get_subnodes(node=s_top_next['xa'], layer=top_layer)[0] # terminal_states[0]['xa']
+            s_copy['xa'] = self.get_subnodes(node=s_top_next['xa'], layer=top_layer)[0]  # terminal_states[0]['xa']
             if layer > 1:
                 POMDP_top_key = self.var_lower_to_var_top(layer_lower=top_layer, var_lower=xa_top_next)
             else:
@@ -1372,15 +1378,16 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                                                alpha_already_computed=True)
             xa_values_li_next, x_items_values_li_next, s_terminals_li_next, action_names_li_next, z_values_li_next = \
                 self.get_state_action_observation_sets(s_copy, s_top_next, layer, a_name_top=a_name_top_next,
-                                                          nr_of_items=len(self.items))
-            self.POMDPs[layer][xa_top_next] = POMDPProblem(xa_values_li_next, x_items_values_li_next, s_terminals_li_next,
-                                                      z_values_li_next, action_names_li_next)
+                                                       nr_of_items=len(self.items))
+            self.POMDPs[layer][xa_top_next] = POMDPProblem(xa_values_li_next, x_items_values_li_next,
+                                                           s_terminals_li_next,
+                                                           z_values_li_next, action_names_li_next)
             # create POMDPX file and solve with SARSOP
             self.create_POMDPX_file(s_copy, layer, xa_values_li_next, x_items_values_li_next, s_terminals_li_next,
                                     action_names_li_next, z_values_li_next)
             os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
-                    config.solving_precision, self.timeout_time,
-                    self.file_names_input[layer], self.file_names_output[layer]))
+                config.solving_precision, self.timeout_time,
+                self.file_names_input[layer], self.file_names_output[layer]))
 
             # get alpha vectors which are used for solving the actual problem
             alpha_vectors, alpha_vectors_attrib = self.read_alpha_vectors(self.file_names_output[layer],
@@ -1394,8 +1401,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                                 action_names_li, z_values_li)
         # solve POMDP with SARSOP
         os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
-                    config.solving_precision, self.timeout_time,
-                    self.file_names_input[layer], self.file_names_output[layer]))
+            config.solving_precision, self.timeout_time,
+            self.file_names_input[layer], self.file_names_output[layer]))
         a_name_li = self.read_policy(self.s_layers[layer], layer, xa_values_li, x_items_values_li, z_values_li,
                                      action_names_li, POMDP_key=POMDP_key)
         # a_name_li = self.read_policy(self.s_layers[layer], layer, xa_values_li, x_items_values_li, z_values_li,
@@ -1405,14 +1412,15 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
 
     def get_state_action_observation_sets(self, s_li, s_top, layer, a_name_top, nr_of_items):
         # create set S^l2, S_t^l2 and A^l2
-        xa_values_li, x_items_values_li = [], {}    #x_items_value_li = {item_nr: [item_values]}
-        s_terminals_li = []    # [[xa_t0, x0_t0, .., xn_t0], [xa_t1, ...], ...]
+        xa_values_li, x_items_values_li = [], {}  # x_items_value_li = {item_nr: [item_values]}
+        s_terminals_li = []  # [[xa_t0, x0_t0, .., xn_t0], [xa_t1, ...], ...]
         action_names_li = []
-        z_values_li = {}    # key = item_nr, value = list of values
+        z_values_li = {}  # key = item_nr, value = list of values
         if layer == 0:
             return self.get_state_action_observation_sets_l0(s_li, nr_of_items)
         elif a_name_top[0:3] == 'nav':
-            n0, n1 = auxiliary_functions.nav_action_get_n0(a_name_top), auxiliary_functions.nav_action_get_n1(a_name_top)
+            n0, n1 = auxiliary_functions.nav_action_get_n0(a_name_top), auxiliary_functions.nav_action_get_n1(
+                a_name_top)
             ni, nj = -1, -1
             if s_top['xa'] == n0:
                 ni = n0
@@ -1421,8 +1429,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                 nj = n0
                 ni = n1
             else:
-                print('action a_l{}={} is not available in s_l{}={}'.format(layer-1, a_name_top, layer-1, s_top))
-            xa_values_li = self.get_subnodes(node=ni, layer=layer-1)
+                print('action a_l{}={} is not available in s_l{}={}'.format(layer - 1, a_name_top, layer - 1, s_top))
+            xa_values_li = self.get_subnodes(node=ni, layer=layer - 1)
             # get all neighbour nodes
             neighbours = []
             for n in xa_values_li:
@@ -1431,10 +1439,10 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             neighbours = list(set(neighbours))
             # add all neighbours that are in n^l1_j to xa_values_l2 and xa_terminals_l2
             for n in neighbours:
-                if n in self.get_subnodes(node=nj, layer=layer-1):
+                if n in self.get_subnodes(node=nj, layer=layer - 1):
                     xa_values_li.append(n)
             for n in neighbours:
-                if n in self.get_subnodes(node=nj, layer=layer-1):
+                if n in self.get_subnodes(node=nj, layer=layer - 1):
                     s_terminal = {'xa': [n]}
                     for item_idx in range(nr_of_items):
                         item_type = self.inverse_item_map(item_idx)
@@ -1455,12 +1463,12 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                     z_values_li[item_idx] = zj_values_li
                 x_items_values_li[item_idx] = xj_values_li
             action_names_li = self.nodegraphs_layers[layer].get_nav_actions_for_nodes(
-                nodes=self.get_subnodes(node=ni, layer=layer-1), nodes_restriction=xa_values_li)
+                nodes=self.get_subnodes(node=ni, layer=layer - 1), nodes_restriction=xa_values_li)
             if layer == self.nr_of_layers - 1:
                 action_names_li.append('look_around')
         elif a_name_top[0:6] == 'pickup':
             item_idx = int(a_name_top[6])
-            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1)
+            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
             xj_values_li = []
             for item_idx2 in range(nr_of_items):
                 item_type = self.inverse_item_map(item_idx2)
@@ -1469,13 +1477,13 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                 elif s_top[item_type] == 'goal':
                     xj_values_li = ['goal']
                 else:
-                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['not_here']
-                    z_values_li[item_idx2] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer-1)
+                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['not_here']
+                    z_values_li[item_idx2] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer - 1)
                     if item_idx == item_idx2:
                         xj_values_li.append('agent')
                         z_values_li[item_idx2].append('agent')
                 x_items_values_li[item_idx2] = xj_values_li
-            s_terminal = {'xa': self.get_subnodes(node=s_top['xa'], layer=layer-1)}
+            s_terminal = {'xa': self.get_subnodes(node=s_top['xa'], layer=layer - 1)}
             for item_idx2 in range(nr_of_items):
                 item_type = self.inverse_item_map(item_idx2)
                 if item_idx2 == item_idx:
@@ -1486,7 +1494,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                     s_terminal[item_idx2] = ['*']
             s_terminals_li.append(s_terminal)
             action_names_li = self.nodegraphs_layers[layer].get_nav_actions_for_nodes(nodes=xa_values_li,
-                                                                          nodes_restriction=xa_values_li)
+                                                                                      nodes_restriction=xa_values_li)
             if layer == self.nr_of_layers - 1:
                 action_names_li.append('look_around')
             action_names_li.append('pickup{}'.format(item_idx))
@@ -1495,12 +1503,12 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                 item_type = self.inverse_item_map(item_idx2)
                 if s_li[item_type] == 'agent':
                     item_idx = item_idx2
-            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1)
+            xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
             for item_idx2 in range(nr_of_items):
                 item_type = self.inverse_item_map(item_idx2)
                 if item_idx2 == item_idx:
-                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1) + \
-                                          ['agent']
+                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + \
+                                   ['agent']
                     if self.items[item_idx].goal_nodes_layers[layer] in xj_values_li:
                         xj_values_li.append('goal')
                         if layer == self.nr_of_layers - 1:
@@ -1508,10 +1516,10 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                 elif s_li[item_type] == 'goal':
                     xj_values_li = ['goal']
                 else:
-                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer-1) + ['not_here']
-                    z_values_li[item_idx2] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer-1)
+                    xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['not_here']
+                    z_values_li[item_idx2] = ['no'] + self.get_subnodes(node=s_top['xa'], layer=layer - 1)
                 x_items_values_li[item_idx2] = xj_values_li
-            terminal_values = self.get_subnodes(node=s_top['xa'], layer=layer-1)
+            terminal_values = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
             if self.items[item_idx].goal_nodes_layers[layer] in terminal_values:
                 terminal_values.append('goal')
             for x_item_value in terminal_values:
@@ -1525,7 +1533,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                         s_terminal[item_idx2] = ['*']
                 s_terminals_li.append(s_terminal)
             action_names_li = self.nodegraphs_layers[layer].get_nav_actions_for_nodes(nodes=xa_values_li,
-                                                                          nodes_restriction=xa_values_li)
+                                                                                      nodes_restriction=xa_values_li)
             if layer == self.nr_of_layers - 1:
                 action_names_li.append('look_around')
             action_names_li.append('release')
@@ -1573,12 +1581,12 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         f.write("\t\t\t<Parameter type = \"TBL\">\n")
         # write instance for transfering to the terminal states ########################################################
         for s_terminal in s_terminals_li:
-            instance_string = '*'   # for any action
-            instance_string += ' *' # for any starting xa
+            instance_string = '*'  # for any action
+            instance_string += ' *'  # for any starting xa
             for item_idx in range(self.nr_of_items):
                 if item_idx in x_items_values_li.keys():
                     instance_string += ' *'
-            key_list = ['xa'] + list(range(0,self.nr_of_items))
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
             for var_key in key_list:
                 if var_key in s_terminal.keys():
                     var_t = s_terminal[var_key]
@@ -1596,7 +1604,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         # 0 reward for starting and staying in terminal state ######################################################
         for s_terminal in s_terminals_li:
             instance_string = '*'
-            key_list = ['xa'] + list(range(0,self.nr_of_items))
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
             for var_key in key_list:
                 if var_key in s_terminal.keys():
                     var_t = s_terminal[var_key]
@@ -1623,7 +1631,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         value_table_string = ''
         # STEP 1: get all terminal state variations
         var_values_li = {}
-        key_list = ['xa'] + list(range(0,self.nr_of_items))
+        key_list = ['xa'] + list(range(0, self.nr_of_items))
         for var_name in key_list:
             if var_name in s_terminal_li.keys():
                 var_val = s_terminal_li[var_name]
@@ -1639,7 +1647,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         nr_of_terminal_states = np.prod([len(var_values_li[key]) for key in var_values_li.keys()])
         # STEP 2: loop over all terminal states
         s_li = {}
-        key_list = ['xa'] + list(range(0,self.nr_of_items))
+        key_list = ['xa'] + list(range(0, self.nr_of_items))
         for var_name in key_list:
             if var_name in var_values_li.keys():
                 var_values = var_values_li[var_name]
@@ -1647,7 +1655,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         for state_nr in range(nr_of_terminal_states):
             # if impossible terminal state -> - 10000 reward
             impossible_state = False
-            key_list = ['xa'] + list(range(0,self.nr_of_items))
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
             for var_name in key_list:
                 if var_name in s_li.keys():
                     var_value = s_li[var_name]
@@ -1675,7 +1683,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                             POMDP_key = self.var_lower_to_var_top(next_layer, s_next['xa'])
                         for s_terminal_next in self.POMDPs[next_layer][POMDP_key].s_terminals:
                             different_states = False
-                            key_list = ['xa'] + list(range(0,self.nr_of_items))
+                            key_list = ['xa'] + list(range(0, self.nr_of_items))
                             for var_name in key_list:
                                 if var_name in s_terminal_next.keys():
                                     var_val = s_terminal_next[var_name]
@@ -1692,9 +1700,6 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                             s_next[var_name] = self.var_lower_to_var_top(layer_lower=next_layer, var_lower=var_val)
                         next_layer -= 1
                     # create belief_enumerated
-                    #POMDP_key = self.var_lower_to_var_lop(layer, s_li['xa'])
-                    # if s_next[0] == 'not_here' and s_next[1] == 'agent':
-                    #     debug=True
                     if next_layer == layer:
                         belief_enumerated_next = self.get_terminal_belief_for_every_state_next(
                             next_layer, s_next, self.b0_layers[next_layer],
@@ -1717,16 +1722,17 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                         V_p = np.dot(vector, belief_enumerated_next)
                         if V_p > V_best:
                             V_best = V_p
-                    value_table_string += ' {}'.format(V_best + 5000)   # quick fix: to avoid discounting problems, add a constant value to all values
+                    value_table_string += ' {}'.format(
+                        V_best + 5000)  # quick fix: to avoid discounting problems, add a constant value to all values
                 else:
                     # STEP 2a: convert s_li to s_top
                     s_top = copy.copy(s_li)
-                    top_layer = layer -1
+                    top_layer = layer - 1
                     for higher_layer in range(layer - 1, -1, -1):
                         top_layer = higher_layer
                         # set s_top
                         for var_name, var_val in list(s_top.items()):
-                            s_top[var_name] = self.var_lower_to_var_top(layer_lower=higher_layer+1, var_lower=var_val)
+                            s_top[var_name] = self.var_lower_to_var_top(layer_lower=higher_layer + 1, var_lower=var_val)
                         # get POMDP key
                         if higher_layer == 0:
                             POMDP_key = 'all'
@@ -1754,7 +1760,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                             break
                     # STEP 2b: create b_top from s_top
                     belief_top_enumerated = self.get_terminal_belief_for_every_state_top(
-                        top_layer, layer, self.b0_layers[top_layer], s_top, self.POMDPs[top_layer][POMDP_key].x_items_values,
+                        top_layer, layer, self.b0_layers[top_layer], s_top,
+                        self.POMDPs[top_layer][POMDP_key].x_items_values,
                         self.POMDPs[top_layer][POMDP_key].z_values, self.b0_layers[layer], x_items_values_li)
                     # STEP 2c: read Value of top layer with b_top and set as reward
                     V_best = -1000000
@@ -1768,7 +1775,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                             V_best = V_p
                     value_table_string += ' {}'.format(V_best + 5000)
             # change s_li to next state
-            keys_all = list(range(0, self.nr_of_items))
+            keys_all = ['xa'] + list(range(0, self.nr_of_items))
             keys = []
             for key in keys_all:
                 if key in s_li.keys():
@@ -1796,16 +1803,19 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             if item_idx in x_items_values_li.keys() and item_idx in z_values_top.keys() and item_idx not in s_top_copy.keys():
                 s_top_copy[item_idx] = -1
         b_of_s_top = []
-        key_list = list(range(0,self.nr_of_items))
+        key_list = list(range(0, self.nr_of_items))
         for var_name in key_list:
             if var_name in s_top_copy.keys():
                 b_of_var = []
                 for idx, var_val in enumerate(x_items_values_top[var_name]):
-                    if s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[var_name] == var_val:
+                    if s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[
+                        var_name] == var_val:
                         b_of_var.append(1.0)
-                    elif s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[var_name] != var_val:
+                    elif s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[
+                        var_name] != var_val:
                         b_of_var.append(0.0)
-                    elif s_top_copy[var_name] == -1 or s_top_copy[var_name] == 'not_here' and (var_val == 'agent' or var_val == 'goal'):
+                    elif s_top_copy[var_name] == -1 or s_top_copy[var_name] == 'not_here' and (
+                            var_val == 'agent' or var_val == 'goal'):
                         b_of_var.append(0.0)
                     elif s_top_copy[var_name] == -1 or s_top_copy[var_name] == 'not_here':
                         if var_val == 'not_here':
@@ -1855,7 +1865,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         belief_top_enumerated = np.zeros(nr_of_item_states)
 
         var_indices = []
-        key_list = list(range(0,self.nr_of_items))
+        key_list = list(range(0, self.nr_of_items))
         for var_key in key_list:
             if var_key in s_top_copy.keys():
                 var_indices.append(var_key)
@@ -1864,7 +1874,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             s_j_copy = s_j
             for item_idx in range(len(var_indices)):
                 nr_of_xj_values = 1
-                for idx in range(len(var_indices)-1, item_idx, -1):
+                for idx in range(len(var_indices) - 1, item_idx, -1):
                     nr_of_xj_values *= len(x_items_values_top[var_indices[idx]])
                 xj_top_idx = int(s_j_copy / nr_of_xj_values)
                 s_j_copy = s_j_copy % nr_of_xj_values
@@ -1872,7 +1882,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             belief_top_enumerated[s_j] = b
         return belief_top_enumerated
 
-    def get_terminal_belief_for_every_state_next(self, layer, s_li, b0_next, x_items_values_li_next, z_values_li_next, x_items_values_li_curr):
+    def get_terminal_belief_for_every_state_next(self, layer, s_li, b0_next, x_items_values_li_next, z_values_li_next,
+                                                 x_items_values_li_curr):
         s_li_copy = copy.copy(s_li)
         # remove variables from s_li_copy that are not in z_values_li_next
         for var_name in s_li.keys():
@@ -1894,7 +1905,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                         else:
                             b_of_var.append(0.0)
                     elif s_li_copy[var_name] == 'not_here':
-                        if var_val != 'not_here' and (var_val in x_items_values_li_curr[var_name] or var_val == 'agent' or var_val == 'goal'):
+                        if var_val != 'not_here' and (
+                                var_val in x_items_values_li_curr[var_name] or var_val == 'agent' or var_val == 'goal'):
                             b_of_var.append(0.0)
                         elif var_val != 'not_here':
                             b_next = b0_next.get_aggregated_belief(node_nr=var_val)[var_name]
@@ -1910,7 +1922,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
                         else:
                             b_of_xj = 0
                             for xa_lj in self.xa_values_all_layers[layer]:
-                                if xa_lj not in x_items_values_li_curr[var_name] and xa_lj not in x_items_values_li_next[var_name]:
+                                if xa_lj not in x_items_values_li_curr[var_name] and xa_lj not in \
+                                        x_items_values_li_next[var_name]:
                                     b_next = b0_next.get_aggregated_belief(node_nr=xa_lj)[var_name]
                                     # WARNING: if below if condition is changed, need to change it in
                                     # "write_initial_belief_function_li", "get_belief_for_every_state",
@@ -1946,7 +1959,7 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
             s_j_copy = s_j
             for item_idx in range(len(var_indices)):
                 nr_or_xj_values = 1
-                for idx in range(len(var_indices)-1, item_idx, -1):
+                for idx in range(len(var_indices) - 1, item_idx, -1):
                     nr_or_xj_values *= len(x_items_values_li_next[var_indices[idx]])
                 xj_next_idx = int(s_j_copy / nr_or_xj_values)
                 s_j_copy = s_j_copy % nr_or_xj_values
@@ -1955,6 +1968,689 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         return belief_next_enumerated
 
 
+class AgentMultiScaleM3(AgentMultiScaleBasis):
+    def __init__(self, grid=Grid(1, 1, 1, 1), conf0=(0, 0, 0), nr_of_layers=2, node_mapping=None, rec_env=None,
+                 item_names=('mug'), environment='None'):
+        AgentMultiScaleBasis.__init__(self, grid, conf0, nr_of_layers, node_mapping, rec_env, item_names, environment)
+        self.name = 'MultiScaleM3'
+        self.file_names_input = [
+            config.BASE_FOLDER_SIM + self.environment + '_environment/input_output_files/MSM3_input_l{}.pomdpx'.format(
+                1 + layer) for layer in range(self.nr_of_layers)]
+        self.file_names_output = [
+            config.BASE_FOLDER_SIM + self.environment + '_environment/input_output_files/MSM3_output_l{}.policy'.format(
+                1 + layer) for layer in range(self.nr_of_layers)]
+        self.special_terminal_states = {}
 
-# class M3Agent(Agent):
-#     pass
+    def compute_policy(self, layer, a_name_top):
+        xa_values_li, x_items_values_li, s_terminals_li, action_names_li, z_values_li = \
+            self.get_state_action_observation_sets(self.s_layers[layer], self.s_layers[layer - 1], layer, a_name_top,
+                                                   len(self.items))
+        if layer > 0:
+            POMDP_key = self.var_lower_to_var_top(layer, self.s_layers[layer]['xa'])
+        else:
+            POMDP_key = 'all'
+        if len(self.POMDPs) >= layer + 1:
+            self.POMDPs[layer][POMDP_key].set_variable_sets(
+                xa_values_li, x_items_values_li, s_terminals_li, z_values_li, action_names_li)
+        else:
+            self.POMDPs.append({POMDP_key: POMDPProblem(xa_values_li, x_items_values_li, s_terminals_li, z_values_li,
+                                                        action_names_li)})
+        # check if a terminal state is also a terminal state of POMDP one layer below, if so, need to solve next problem as well
+        top_layer = layer - 1
+        # sort terminal states according to xa_top value
+        terminal_state_mapping = {}
+        if layer > 0:
+            for s_terminal in s_terminals_li:
+                if s_terminal['xa'][0] != '*' and s_terminal['xa'][0] not in \
+                        self.get_subnodes(node=self.s_layers[layer-1]['xa'], layer=layer-1):
+                    xa_top_next = self.var_lower_to_var_top(layer_lower=layer, var_lower=s_terminal['xa'][0])
+                else:
+                    continue
+                if xa_top_next not in terminal_state_mapping.keys():
+                    terminal_state_mapping[xa_top_next] = [s_terminal]
+                else:
+                    terminal_state_mapping[xa_top_next].append(s_terminal)
+            # delete all terminal states in terminal_state_mapping that don't require solving another POMDP problem
+            for xa_top_next in list(terminal_state_mapping.keys()):
+                if len(terminal_state_mapping[xa_top_next]) == 1:
+                    # get terminal states for layer below (if it exists)
+                    if layer < self.nr_of_layers - 1:
+                        below_layer = layer + 1
+                        _, _, s_terminals_below, _, _ = \
+                            self.get_state_action_observation_sets(self.s_layers[below_layer], self.s_layers[layer],
+                                                                   below_layer, a_name_top='none',
+                                                                   nr_of_items=len(self.items))
+                        xa_terminals_below = [s_terminals_below[i]['xa'] for i in range(len(s_terminals_below)) if
+                                              s_terminals_below[i]['xa'][0] not in self.get_subnodes(
+                                                  node=self.s_layers[layer]['xa'], layer=layer)]
+
+                        xa_terminals_below_mapped = [self.var_lower_to_var_top(below_layer, xa_terminals_below[i][0])
+                                                     for i in range(len(xa_terminals_below))]
+
+                        xa_terminals_li = [s_terminals_li[i]['xa'][0] for i in range(len(s_terminals_li)) if
+                                           s_terminals_li[i]['xa'][0] in self.get_subnodes(node=xa_top_next,
+                                                                                           layer=top_layer)]
+
+                        delete_entry = True
+                        for xa_li in xa_terminals_li:
+                            if xa_li in xa_terminals_below_mapped:
+                                delete_entry = False
+                        if delete_entry:
+                            del terminal_state_mapping[xa_top_next]
+                    else:
+                        del terminal_state_mapping[xa_top_next]
+        self.special_terminal_states = copy.copy(terminal_state_mapping)
+        for xa_top_next, terminal_states in terminal_state_mapping.items():
+            # get next action move of layer above
+            s_top_next = copy.copy(self.s_layers[top_layer])
+            s_top_next['xa'] = xa_top_next
+            # get a starting state for this layer in s_top_next
+            s_copy = copy.copy(self.s_layers[layer])
+            s_copy['xa'] = self.get_subnodes(node=s_top_next['xa'], layer=top_layer)[0]  # terminal_states[0]['xa']
+            if layer > 1:
+                POMDP_top_key = self.var_lower_to_var_top(layer_lower=top_layer, var_lower=xa_top_next)
+            else:
+                POMDP_top_key = 'all'
+            a_name_top_next = self.read_policy(s_top_next, top_layer, self.POMDPs[top_layer][POMDP_top_key].xa_values,
+                                               self.POMDPs[top_layer][POMDP_top_key].x_items_values,
+                                               self.POMDPs[top_layer][POMDP_top_key].z_values,
+                                               self.POMDPs[top_layer][POMDP_top_key].action_names, POMDP_top_key,
+                                               alpha_already_computed=True)
+            xa_values_li_next, x_items_values_li_next, s_terminals_li_next, action_names_li_next, z_values_li_next = \
+                self.get_state_action_observation_sets(s_copy, s_top_next, layer, a_name_top=a_name_top_next,
+                                                       nr_of_items=len(self.items))
+            self.POMDPs[layer][xa_top_next] = POMDPProblem(xa_values_li_next, x_items_values_li_next,
+                                                           s_terminals_li_next,
+                                                           z_values_li_next, action_names_li_next)
+            # create POMDPX file and solve with SARSOP
+            self.create_POMDPX_file(s_copy, layer, xa_values_li_next, x_items_values_li_next, s_terminals_li_next,
+                                    action_names_li_next, z_values_li_next, a_name_top_next)
+            os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
+                config.solving_precision, self.timeout_time,
+                self.file_names_input[layer], self.file_names_output[layer]))
+            # get alpha vectors which are used for solving the actual problem
+            alpha_vectors, alpha_vectors_attrib = self.read_alpha_vectors(self.file_names_output[layer],
+                                                                          xa_values_li_next, x_items_values_li_next)
+            self.POMDPs[layer][xa_top_next].set_alpha_vectors(alpha_vectors, alpha_vectors_attrib)
+            self.solve_terminal_states_problems = True
+
+        self.create_POMDPX_file(self.s_layers[layer], layer, xa_values_li, x_items_values_li, s_terminals_li,
+                                action_names_li, z_values_li, a_name_top)
+        # solve POMDP with SARSOP
+        os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
+            config.solving_precision, self.timeout_time,
+            self.file_names_input[layer], self.file_names_output[layer]))
+        a_name_li = self.read_policy(self.s_layers[layer], layer, xa_values_li, x_items_values_li, z_values_li,
+                                     action_names_li, POMDP_key=POMDP_key)
+        self.solve_terminal_states_problems = False
+        return a_name_li
+
+    def get_state_action_observation_sets(self, s_li, s_top, layer, a_name_top, nr_of_items):
+        xa_values_li, x_items_values_li = [], {}  # x_items_value_l2 = {item_nr: [item_values]}
+        s_terminals_li = []  # [[xa_t0, x0_t0, .., xn_t0], [xa_t1, ...], ...]
+        action_names_li = []
+        z_values_li = {}  # key = item_nr, value = list of values
+        if layer == 0:
+            return self.get_state_action_observation_sets_l0(s_li, nr_of_items)
+        # get xa values ################################################################################################
+        xa_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
+        # get all neighbouring terminal nodes
+        neighbours = []
+        for n in xa_values_li:
+            neighbours += self.nodegraphs_layers[layer].get_neighbour_nodes(node_nr=n)
+        # delete duplicates
+        neighbours = list(set(neighbours))
+        # add all neighbour-nodes to xa_values and to terminal nodes
+        for n in neighbours:
+            if n not in xa_values_li:
+                xa_values_li.append(n)
+        # sort xa_values
+        xa_values_li.sort()
+        # add all terminal states where xa=n
+        for n in neighbours:
+            if n not in self.get_subnodes(node=s_top['xa'], layer=layer - 1):
+                s_terminal = {'xa': [n]}
+                for item_idx in range(nr_of_items):
+                    item_type = self.inverse_item_map(item_idx)
+                    if self.s_layers[layer][item_type] != -1:
+                        s_terminal[item_idx] = [self.s_layers[layer][item_type]]
+                    else:
+                        s_terminal[item_idx] = copy.copy(xa_values_li) + ['not_here']
+                s_terminals_li.append(s_terminal)
+        # get all actions ##############################################################################################
+        # add navigation actions to actions
+        action_names_li += self.nodegraphs_layers[layer].get_nav_actions_for_nodes(
+            nodes=self.get_subnodes(node=s_top['xa'], layer=layer - 1), nodes_restriction=xa_values_li)
+        if layer == self.nr_of_layers - 1:
+            action_names_li.append('look_around')
+        if 'agent' not in s_top.values():
+            for item_idx in range(nr_of_items):
+                item_type = self.inverse_item_map(item_idx)
+                if s_li[item_type] != 'goal':
+                    action_names_li.append('pickup{}'.format(item_idx))
+        else:
+            action_names_li.append('release')
+        # get all item values ##########################################################################################
+        for item_idx in range(nr_of_items):
+            item_type = self.inverse_item_map(item_idx)
+            zj_values_li = []
+            if s_li[item_type] == 'agent':
+                xj_values_li = self.get_subnodes(node=s_top['xa'], layer=layer - 1) + ['agent']
+                terminal_var_list = self.get_subnodes(node=s_top['xa'], layer=layer - 1)
+                if self.items[item_idx].goal_nodes_layers[layer] in self.get_subnodes(node=s_top['xa'],
+                                                                                      layer=layer - 1):
+                    xj_values_li += ['goal']
+                    terminal_var_list += ['goal']
+                    if layer == self.nr_of_layers - 1:
+                        if self.items[item_idx].goal_nodes_layers[layer] in terminal_var_list:
+                            terminal_var_list.remove(self.items[item_idx].goal_nodes_layers[layer])
+                            xj_values_li.remove(self.items[item_idx].goal_nodes_layers[layer])
+                # zj_values_li = ['no'] + xa_values_li.copy() + ['agent']
+                # add terminal states for releasing item in any node
+                for n in terminal_var_list:
+                    if n != 'goal':
+                        s_terminal = {'xa': [n]}
+                    else:
+                        s_terminal = {'xa': [self.items[item_idx].goal_nodes_layers[layer]]}
+                    for item_idx2 in range(nr_of_items):
+                        item_type2 = self.inverse_item_map(item_idx2)
+                        if item_idx2 == item_idx:
+                            s_terminal[item_idx2] = [n]
+                        else:
+                            if self.s_layers[layer][item_type2] != -1:
+                                s_terminal[item_idx2] = [self.s_layers[layer][item_type2]]
+                            else:
+                                s_terminal[item_idx2] = ['*']
+                    s_terminals_li.append(s_terminal)
+            elif s_li[item_type] == 'goal':
+                xj_values_li = ['goal']
+                # zj_values_li = ['no']
+            else:
+                xj_values_li = copy.copy(xa_values_li) + ['not_here']
+                zj_values_li = ['no'] + copy.copy(xa_values_li)
+                # add terminal state for picking item up
+                if 'agent' not in self.s_layers[0].values():
+                    xj_values_li += ['agent']
+                    zj_values_li += ['agent']
+                    s_terminal = {'xa': self.get_subnodes(node=s_top['xa'], layer=layer - 1)}
+                    for item_idx2 in range(nr_of_items):
+                        item_type2 = self.inverse_item_map(item_idx2)
+                        if item_idx2 == item_idx:
+                            s_terminal[item_idx2] = ['agent']
+                        else:
+                            if self.s_layers[layer][item_type2] != -1:
+                                s_terminal[item_idx2] = [self.s_layers[layer][item_type2]]
+                            else:
+                                s_terminal[item_idx2] = ['*']
+                    s_terminals_li.append(s_terminal)
+            x_items_values_li[item_idx] = xj_values_li
+            if len(zj_values_li) > 0:
+                z_values_li[item_idx] = zj_values_li
+
+        return xa_values_li, x_items_values_li, s_terminals_li, action_names_li, z_values_li
+
+    def write_reward_terminal_li(self, f, layer, xa_values_li, x_items_values_li, s_terminals_li, z_values_li,
+                                 a_top='none'):
+        if layer == 0:
+            parent_string = 'action_agent xa_0'
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    parent_string += ' x{}_0'.format(item_idx)
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    parent_string += ' x{}_1'.format(item_idx)
+            f.write("\t\t<Func>\n")
+            f.write("\t\t\t<Var>reward_terminal</Var>\n")
+            f.write("\t\t\t<Parent>{}</Parent>\n".format(parent_string))
+            f.write("\t\t\t<Parameter type = \"TBL\">\n")
+            instance_string = '* *'
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    instance_string += ' *'
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    instance_string += ' *'
+            self.write_entry_valuetable(f, instance_string, value_table_string='0.0')
+            f.write("\t\t\t</Parameter>\n")
+            f.write("\t\t</Func>\n")
+            return
+
+        # create header ################################################################################################
+        parent_string = 'action_agent xa_0'
+        for item_idx in range(self.nr_of_items):
+            if item_idx in x_items_values_li.keys():
+                parent_string += ' x{}_0'.format(item_idx)
+        parent_string += ' xa_1'
+        for item_idx in range(self.nr_of_items):
+            if item_idx in x_items_values_li.keys():
+                parent_string += ' x{}_1'.format(item_idx)
+        f.write("\t\t<Func>\n")
+        f.write("\t\t\t<Var>reward_terminal</Var>\n")
+        f.write("\t\t\t<Parent>{}</Parent>\n".format(parent_string))
+        f.write("\t\t\t<Parameter type = \"TBL\">\n")
+        # write instance for transfering to the terminal states ########################################################
+        for s_terminal in s_terminals_li:
+            instance_string = '*'  # for any action
+            instance_string += ' *'  # for any starting xa
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    instance_string += ' *'
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
+            for var_key in key_list:
+                if var_key in s_terminal.keys():
+                    var_t = s_terminal[var_key]
+                    if var_t[0] == 'none':
+                        continue
+                    elif var_t[0] == '*' or len(var_t) > 1:
+                        instance_string += ' -'
+                    elif var_t[0] == 'agent' or var_t[0] == 'goal' or var_t[0] == 'not_here':
+                        instance_string += ' {}'.format(var_t[0])
+                    else:
+                        instance_string += ' s{}'.format(var_t[0])
+            # calculate reward for transfering to terminal states ######################################################
+            value_table_string = self.get_terminal_reward_li(layer, xa_values_li, x_items_values_li, s_terminal, a_top)
+            self.write_entry_valuetable(f, instance_string, value_table_string)
+        # 0 reward for starting and staying in terminal state ######################################################
+        for s_terminal in s_terminals_li:
+            instance_string = '*'
+            for var_key in key_list:
+                if var_key in s_terminal.keys():
+                    var_t = s_terminal[var_key]
+                    if var_t[0] == 'none':
+                        continue
+                    elif var_t[0] == '*' or len(var_t) > 1:
+                        instance_string += ' *'
+                    elif var_t[0] == 'agent' or var_t[0] == 'goal' or var_t[0] == 'not_here':
+                        instance_string += ' {}'.format(var_t[0])
+                    else:
+                        instance_string += ' s{}'.format(var_t[0])
+            instance_string += ' *'
+            for item_idx in range(self.nr_of_items):
+                if item_idx in x_items_values_li.keys():
+                    instance_string += ' *'
+            self.write_entry_valuetable(f, instance_string, value_table_string='0.0')
+        # reward 0 for illegal states
+        self.write_reward_illegal_states_li(f, x_items_values_li, current_states=True, xa_1_present=True)
+
+        f.write("\t\t\t</Parameter>\n")
+        f.write("\t\t</Func>\n")
+
+    def get_terminal_reward_li(self, layer, xa_values_li, x_items_values_li, s_terminal_li, a_top):
+        # STEP 0: precompute reward penalty if s_terminal_li is not the terminal state suggested by layer above
+        # get terminal state from layer above
+        V_penalty = 0.0
+        s_terminal_suggested = {}
+        if a_top[0:3] == 'nav':
+            n0 = auxiliary_functions.nav_action_get_n0(a_top)
+            n1 = auxiliary_functions.nav_action_get_n1(a_top)
+            if self.s_layers[layer - 1]['xa'] == n0:
+                s_terminal_suggested['xa'] = n1
+            else:
+                s_terminal_suggested['xa'] = n0
+            if len(s_terminal_li['xa']) > 0:
+                if s_terminal_suggested['xa'] == self.var_lower_to_var_top(layer_lower=layer,
+                                                                           var_lower=s_terminal_li['xa'][0]):
+                    V_penalty = 0.0
+                else:
+                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+        elif a_top[0:6] == 'pickup':
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
+            for var_name in key_list:
+                if var_name in s_terminal_li.keys():
+                    var_val = s_terminal_li[var_name]
+                    if var_val[0] == 'agent':
+                        V_penalty = 0.0
+                        break
+                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+        elif a_top[0:6] == 'release':
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
+            for var_name in key_list:
+                if var_name in s_terminal_li.keys():
+                    var_val = s_terminal_li[var_name]
+                    if var_val[0] != 'agent' and len(var_val[0]) == 1:
+                        V_penalty = 0.0
+                        break
+                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+
+        # STEP 1: get all terminal state variations
+        value_table_string = ''
+        var_values_li = {}
+        key_list = ['xa'] + list(range(0, self.nr_of_items))
+        for var_name in key_list:
+            if var_name in s_terminal_li.keys():
+                var_val = s_terminal_li[var_name]
+                if var_val[0] == '*' or len(var_val) > 1:
+                    if var_name == 'xa':
+                        var_values_li[var_name] = xa_values_li
+                    else:
+                        var_values_li[var_name] = x_items_values_li[var_name]
+                elif var_val[0] == 'none':
+                    continue
+                else:
+                    var_values_li[var_name] = [var_val[0]]
+        nr_of_terminal_states = np.prod([len(var_values_li[key]) for key in var_values_li.keys()])
+        # STEP 2: loop over all terminal states
+        s_li = {}
+        key_list = ['xa'] + list(range(0, self.nr_of_items))
+        for var_name in key_list:
+            if var_name in var_values_li.keys():
+                var_values = var_values_li[var_name]
+                s_li[var_name] = var_values[0]
+        for state_nr in range(nr_of_terminal_states):
+            # if impossible terminal state -> - 10000 reward
+            impossible_state = False
+            key_list = ['xa'] + list(range(0, self.nr_of_items))
+            for var_name in key_list:
+                if var_name in s_li.keys():
+                    var_value = s_li[var_name]
+                    if var_value not in s_terminal_li[var_name] and s_terminal_li[var_name][0] != 'none' and \
+                            s_terminal_li[var_name][0] != '*':
+                        value_table_string += ' 0'
+                        impossible_state = True
+                        break
+            if not impossible_state and list(s_li.values()).count('agent') > 1:
+                value_table_string += ' 0'
+                impossible_state = True
+            if not impossible_state:
+                use_next_POMDP = False
+                for terminal_states in self.special_terminal_states.values():
+                    for terminal_state in terminal_states:
+                        if s_li['xa'] == terminal_state['xa'][0]:
+                            use_next_POMDP = True
+                if use_next_POMDP and self.solve_terminal_states_problems:
+                    # check if terminal belief is also a terminal belief in Problem next
+                    next_layer = layer
+                    s_next = copy.copy(s_li)
+                    for higher_layer in range(layer, -1, -1):
+                        next_layer = higher_layer
+                        if next_layer == 0:
+                            POMDP_key = 'all'
+                            break
+                        elif next_layer > 0:
+                            POMDP_key = self.var_lower_to_var_top(next_layer, s_next['xa'])
+                        for s_terminal_next in self.POMDPs[next_layer][POMDP_key].s_terminals:
+                            different_states = False
+                            for var_name in key_list:
+                                if var_name in s_terminal_next.keys():
+                                    var_val = s_terminal_next[var_name]
+                                    if var_val[0] == '*' or len(var_val) > 1:
+                                        continue
+                                    if var_val[0] != s_next[var_name]:
+                                        different_states = True
+                                        break
+                            if not different_states:
+                                break
+                        if different_states:
+                            break
+                        for var_name, var_val in list(s_next.items()):
+                            s_next[var_name] = self.var_lower_to_var_top(layer_lower=next_layer, var_lower=var_val)
+                        next_layer -= 1
+                    # create belief_enumerated
+                    if next_layer == layer:
+                        belief_enumerated_next = self.get_terminal_belief_for_every_state_next(
+                            next_layer, s_next, self.b0_layers[next_layer],
+                            self.POMDPs[next_layer][POMDP_key].x_items_values,
+                            self.POMDPs[next_layer][POMDP_key].z_values, x_items_values_li)
+                    else:
+                        belief_enumerated_next = self.get_terminal_belief_for_every_state_top(
+                            next_layer, layer, self.b0_layers[next_layer], s_next,
+                            self.POMDPs[next_layer][POMDP_key].x_items_values,
+                            self.POMDPs[next_layer][POMDP_key].z_values, b0_li=self.b0_layers[layer],
+                            x_items_values_li=x_items_values_li)
+
+                    # read Values from the terminal state POMDP
+                    V_best = -1000000
+                    sel = self.get_alpha_vectors_selection(s_next, self.POMDPs[next_layer][POMDP_key].xa_values,
+                                                           self.POMDPs[next_layer][POMDP_key].x_items_values,
+                                                           self.POMDPs[next_layer][POMDP_key].z_values,
+                                                           self.POMDPs[next_layer][POMDP_key].alpha_vectors_attrib)
+                    for idx, vector in enumerate(self.POMDPs[next_layer][POMDP_key].alpha_vectors[sel]):
+                        V_p = np.dot(vector, belief_enumerated_next)
+                        if V_p > V_best:
+                            V_best = V_p
+                    value_table_string += ' {}'.format(V_best + V_penalty)
+                else:
+                    # STEP 2a: convert s_li to s_top
+                    s_top = copy.copy(s_li)
+                    top_layer = layer - 1
+                    for higher_layer in range(layer - 1, -1, -1):
+                        top_layer = higher_layer
+                        # set s_top
+                        for var_name, var_val in list(s_top.items()):
+                            s_top[var_name] = self.var_lower_to_var_top(layer_lower=higher_layer + 1, var_lower=var_val)
+                        # get POMDP key
+                        if higher_layer == 0:
+                            POMDP_key = 'all'
+                            break
+                        # POMDP_key = self.var_lower_to_var_top(higher_layer, self.s_layers[higher_layer]['xa'])
+                        POMDP_key = self.var_lower_to_var_top(higher_layer, s_top['xa'])
+                        # if the key does not exist, check if POMDP_key is a terminal state of another POMDP problem
+                        if POMDP_key not in self.POMDPs[higher_layer].keys():
+                            is_new_key = True
+                            for key in self.POMDPs[higher_layer].keys():
+                                for s_terminal in self.POMDPs[higher_layer][key].s_terminals:
+                                    if POMDP_key == self.var_lower_to_var_top(higher_layer, s_terminal['xa'][0]):
+                                        POMDP_key = key
+                                        is_new_key = False
+                                        break
+                                if not is_new_key:
+                                    break
+                        # check if s_top is not a terminal state in the layer above
+                        for s_terminal_top in self.POMDPs[higher_layer][POMDP_key].s_terminals:
+                            different_states = False
+                            for var_name, var_val in s_terminal_top.items():
+                                if var_val[0] == '*' or len(var_val) > 1:
+                                    continue
+                                if var_val[0] != s_top[var_name]:
+                                    different_states = True
+                                    break
+                            if not different_states:
+                                break
+                        if different_states:
+                            break
+                    # STEP 2b: create b_top from s_top
+                    belief_top_enumerated = self.get_terminal_belief_for_every_state_top(
+                        top_layer, layer, self.b0_layers[top_layer], s_top,
+                        self.POMDPs[top_layer][POMDP_key].x_items_values,
+                        self.POMDPs[top_layer][POMDP_key].z_values, self.b0_layers[layer], x_items_values_li)
+                    # STEP 2c: read Value of top layer with b_top and set as reward
+                    V_best = -1000000
+                    sel = self.get_alpha_vectors_selection(s_top, self.POMDPs[top_layer][POMDP_key].xa_values,
+                                                           self.POMDPs[top_layer][POMDP_key].x_items_values,
+                                                           self.POMDPs[top_layer][POMDP_key].z_values,
+                                                           self.POMDPs[top_layer][POMDP_key].alpha_vectors_attrib)
+                    for idx, vector in enumerate(self.POMDPs[top_layer][POMDP_key].alpha_vectors[sel]):
+                        V_p = np.dot(vector, belief_top_enumerated)
+                        if V_p > V_best:
+                            V_best = V_p
+                    value_table_string += ' {}'.format(V_best + V_penalty)
+            # change s_li to next state
+            keys_all = ['xa'] + list(range(0, self.nr_of_items))
+            keys = []
+            for key in keys_all:
+                if key in s_li.keys():
+                    keys.append(key)
+            keys.reverse()
+            for key in keys:
+                if s_li[key] == var_values_li[key][-1]:
+                    s_li[key] = var_values_li[key][0]
+                else:
+                    next_idx = var_values_li[key].index(s_li[key]) + 1
+                    s_li[key] = var_values_li[key][next_idx]
+                    break
+
+        return value_table_string
+
+    def get_terminal_belief_for_every_state_top(self, top_layer, layer_li, b0_top, s_top, x_items_values_top,
+                                                z_values_top, b0_li, x_items_values_li):
+        s_top_copy = copy.copy(s_top)
+        # remove variables from s_top_copy that are not in z_values_top
+        for var_name in s_top.keys():
+            if var_name not in z_values_top.keys():
+                del s_top_copy[var_name]
+        # add variables to s_top that are not in s_li
+        for item_idx in range(self.nr_of_items):
+            if item_idx in x_items_values_top.keys() and item_idx in z_values_top.keys() and item_idx not in s_top_copy.keys():
+                s_top_copy[item_idx] = -1
+        b_of_s_top = []
+        key_list = list(range(0, self.nr_of_items))
+        for var_name in key_list:
+            if var_name in s_top_copy.keys():
+                b_of_var = []
+                for idx, var_val in enumerate(x_items_values_top[var_name]):
+                    if s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[
+                        var_name] == var_val:
+                        b_of_var.append(1.0)
+                    elif s_top_copy[var_name] != -1 and s_top_copy[var_name] != 'not_here' and s_top_copy[
+                        var_name] != var_val:
+                        b_of_var.append(0.0)
+                    elif s_top_copy[var_name] == -1 or s_top_copy[var_name] == 'not_here' and (
+                            var_val == 'agent' or var_val == 'goal'):
+                        b_of_var.append(0.0)
+                    elif s_top_copy[var_name] == -1 or s_top_copy[var_name] == 'not_here':
+                        if var_val == 'not_here':
+                            b_top_not_here = 0
+                            for xi_top in self.xa_values_all_layers[top_layer]:
+                                if xi_top not in x_items_values_top[var_name]:
+                                    b_xi_top = b0_top.get_aggregated_belief(node_nr=xi_top)[var_name]
+                                    # WARNING: if below rounding rule is changed, need to change it in
+                                    # "write_initial_belief_function_li", "get_belief_for_every_state",
+                                    # "get_belief_for_every_state_next", "get_belief_for_every_state_top",
+                                    if top_layer >= 0:
+                                        if b_xi_top > self.b0_threshold:
+                                            b_xi_top = 1.0
+                                        elif b_xi_top < 1 - self.b0_threshold:
+                                            b_xi_top = 0.0
+                                    b_top_not_here += b_xi_top
+                            b_of_var.append(b_top_not_here)
+                        else:
+                            b_of_xi = 0.0
+                            # xi_values_li_of_xi_top = self.get_subnodes(node=var_val, layer=top_layer)
+                            if top_layer + 1 != layer_li:
+                                debug = True
+                            xi_values_li_of_xi_top = self.get_subnodes_over_multiple_layers(
+                                top_node=var_val, top_layer=top_layer, bottom_layer=layer_li)
+                            for xi_li in x_items_values_li[var_name]:
+                                if xi_li in xi_values_li_of_xi_top:
+                                    b_xi_li = b0_li.get_aggregated_belief(node_nr=xi_li)[var_name]
+                                    b_of_xi += b_xi_li
+                            b_of_xi_top = b0_top.get_aggregated_belief(node_nr=var_val)[var_name] - b_of_xi
+                            if top_layer >= 0:
+                                if b_of_xi_top > self.b0_threshold:
+                                    b_of_xi_top = 1.0
+                                elif b_of_xi_top < 1.0 - self.b0_threshold:
+                                    b_of_xi_top = 0.0
+                            b_of_var.append(b_of_xi_top)
+                # normalize row
+                row_sum = sum(b_of_var)
+                if row_sum > 0:
+                    for idx, var_val in enumerate(x_items_values_top[var_name]):
+                        b_of_var[idx] /= row_sum
+                else:
+                    debug = True
+                b_of_s_top.append(b_of_var)
+        nr_of_item_states = 1
+        for var_name in s_top_copy.keys():
+            nr_of_item_states *= len(x_items_values_top[var_name])
+        belief_top_enumerated = np.zeros(nr_of_item_states)
+        var_indices = []
+        key_list = list(range(0, self.nr_of_items))
+        for var_key in key_list:
+            if var_key in s_top_copy.keys():
+                var_indices.append(var_key)
+        for s_j in range(len(belief_top_enumerated)):
+            b = 1.0
+            s_j_copy = s_j
+            for item_idx in range(len(var_indices)):
+                nr_of_xj_values = 1
+                for idx in range(len(var_indices) - 1, item_idx, -1):
+                    nr_of_xj_values *= len(x_items_values_top[var_indices[idx]])
+                xj_top_idx = int(s_j_copy / nr_of_xj_values)
+                s_j_copy = s_j_copy % nr_of_xj_values
+                b *= b_of_s_top[item_idx][xj_top_idx]
+            belief_top_enumerated[s_j] = b
+        return belief_top_enumerated
+
+    def get_terminal_belief_for_every_state_next(self, layer, s_li, b0_next, x_items_values_li_next, z_values_li_next,
+                                                 x_items_values_li_curr):
+        s_li_copy = copy.copy(s_li)
+        # remove variables from s_li_copy that are not in z_values_li_next
+        for var_name in s_li.keys():
+            if var_name not in z_values_li_next.keys():
+                del s_li_copy[var_name]
+        b_of_s_next = []
+        key_list = list(range(0, self.nr_of_items))
+        for var_name in key_list:
+            if var_name in s_li_copy.keys():
+                b_of_var = []
+                for idx, var_val in enumerate(x_items_values_li_next[var_name]):
+                    if s_li_copy[var_name] != 'not_here' and s_li_copy[var_name] == var_val:
+                        b_of_var.append(1.0)
+                    elif s_li_copy[var_name] != 'not_here' and var_val != 'not_here' and s_li_copy[var_name] != var_val:
+                        b_of_var.append(0.0)
+                    elif s_li_copy[var_name] != 'not_here' and var_val == 'not_here':
+                        if s_li_copy[var_name] not in x_items_values_li_next[var_name]:
+                            b_of_var.append(1.0)
+                        else:
+                            b_of_var.append(0.0)
+                    elif s_li_copy[var_name] == 'not_here':
+                        if var_val != 'not_here' and (
+                                var_val in x_items_values_li_curr[var_name] or var_val == 'agent' or var_val == 'goal'):
+                            b_of_var.append(0.0)
+                        elif var_val != 'not_here':
+                            b_next = b0_next.get_aggregated_belief(node_nr=var_val)[var_name]
+                            # WARNING: if below if condition is changed, need to change it in
+                            # "write_initial_belief_function_li", "get_belief_for_every_state",
+                            # "get_belief_for_every_state_next", "get_belief_for_every_state_top",
+                            if layer >= 0:
+                                if b_next > self.b0_threshold:
+                                    b_next = 1.0
+                                elif b_next < 1 - self.b0_threshold:
+                                    b_next = 0.0
+                            b_of_var.append(b_next)
+                        else:
+                            b_of_xj = 0
+                            for xa_lj in self.xa_values_all_layers[layer]:
+                                if xa_lj not in x_items_values_li_curr[var_name] and xa_lj not in \
+                                        x_items_values_li_next[var_name]:
+                                    b_next = b0_next.get_aggregated_belief(node_nr=xa_lj)[var_name]
+                                    # WARNING: if below if condition is changed, need to change it in
+                                    # "write_initial_belief_function_li", "get_belief_for_every_state",
+                                    # "get_belief_for_every_state_next", "get_belief_for_every_state_top",
+                                    if layer >= 0:
+                                        if b_next > self.b0_threshold:
+                                            b_next = 1.0
+                                        elif b_next < 1 - self.b0_threshold:
+                                            b_next = 0.0
+                                    b_of_xj += b_next
+                            b_of_var.append(b_of_xj)
+                # normalize row
+                row_sum = sum(b_of_var)
+                if row_sum == 0:
+                    debug = True
+                else:
+                    for idx, var_val in enumerate(x_items_values_li_next[var_name]):
+                        b_of_var[idx] /= row_sum
+                b_of_s_next.append(b_of_var)
+
+        nr_of_item_states = 1
+        for var_name in s_li_copy.keys():
+            nr_of_item_states *= len(x_items_values_li_next[var_name])
+        belief_next_enumerated = np.zeros(nr_of_item_states)
+        var_indices = []
+        key_list = list(range(0, self.nr_of_items))
+        for var_key in key_list:
+            if var_key in s_li_copy.keys():
+                var_indices.append(var_key)
+        for s_j in range(len(belief_next_enumerated)):
+            b = 1.0
+            s_j_copy = s_j
+            for item_idx in range(len(var_indices)):
+                nr_or_xj_values = 1
+                for idx in range(len(var_indices) - 1, item_idx, -1):
+                    nr_or_xj_values *= len(x_items_values_li_next[var_indices[idx]])
+                xj_next_idx = int(s_j_copy / nr_or_xj_values)
+                s_j_copy = s_j_copy % nr_or_xj_values
+                b *= b_of_s_next[item_idx][xj_next_idx]
+            belief_next_enumerated[s_j] = b
+        return belief_next_enumerated

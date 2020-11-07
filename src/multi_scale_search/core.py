@@ -825,8 +825,6 @@ class AgentMultiScaleBasis(Agent):
             self.computation_time_for_each_action.append(comp_time_per_layer)
             self.computation_time = sum(self.computation_time_layers)
             a_name_lN = self.a_names[-1]
-            if a_name_lN[0:6] == 'pickup':
-                debug = True
             # if it is a navigation action -> set observation prob. to 0
             if a_name_lN[0:3] == 'nav':
                 n0, n1 = auxiliary_functions.nav_action_get_n0(a_name_lN), auxiliary_functions.nav_action_get_n1(
@@ -842,9 +840,6 @@ class AgentMultiScaleBasis(Agent):
                 self.compute_observation_probabilities_for_all_layers()
             self.current_action_name_lN = a_name_lN
             print('a = {}'.format(self.a_names))
-            #     for i in range(len(self.items)):
-            #         self.belief.draw_plot(agent_x=self.x, agent_y=self.y, item_nr=i, world_width=self.grid.total_width,
-            #                           world_height=self.grid.total_height)
             # execute subroutine
             a = self.subroutine_actions[a_name_lN]
             goal_ref = a.subroutine(s=self.s_layers[-1], item_map=self.item_map, agent_x=self.x, agent_y=self.y,
@@ -931,9 +926,10 @@ class AgentMultiScaleBasis(Agent):
                         s_terminal_li[item_key] = [self.s_layers[layer][item_type]]
             self.POMDPs[layer]['next'] = POMDPProblem(xa_values_li_next, x_items_values_li_next, s_terminals_li_next,
                                                       z_values_li_next, action_names_li_next)
-            # create POMDPX file and solve with SARSOP
+            # create POMDPX file
             self.create_POMDPX_file(s_copy, layer, xa_values_li_next, x_items_values_li_next, s_terminals_li_next,
                                     action_names_li_next, z_values_li_next)
+            # solve POMDP with SARSOP
             os.system(config.SARSOP_SRC_FOLDER + "./pomdpsol --precision {} --timeout {} {} --output {}".format(
                 config.solving_precision, self.timeout_time,
                 self.file_names_input[layer], self.file_names_output[layer]))
@@ -1073,7 +1069,6 @@ class AgentMultiScaleBasis(Agent):
             b = 1.0
             s_i_copy = s_i
             for item_idx in POMDP_item_indices:
-                xj_values_li = x_items_values_li[item_idx]
                 nr_of_xi_values = 1
                 for idx in range(len(x_items_values_li.keys()) - 1, item_indices.index(item_idx), -1):
                     if item_indices[idx] not in POMDP_item_indices:
@@ -1106,7 +1101,9 @@ class AgentMultiScaleBasis(Agent):
                 multiplication_factor *= len(x_items_values_li[item_idx])
             xa_li = s_li['xa']
             state_nr += xa_values_li.index(xa_li) * multiplication_factor
+
             sel = alpha_vectors_attrib[:, 0] == state_nr
+
         return sel
 
     def create_POMDPX_file(self, s, layer, xa_values_li, x_items_values_li, s_terminals_li, action_names_li,
@@ -1118,7 +1115,6 @@ class AgentMultiScaleBasis(Agent):
         f.write("<pomdpx version=\"1.0\" id=\"simplifiedMDP\"\n")
         f.write("\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
         f.write("\txsi:noNamespaceSchemaLocation=\"pomdpx.xsd\">\n")
-
         # write Description tag
         f.write("\t<Description> MultiScale POMDP Layer {}\n".format(layer))
         f.write("\t</Description>\n")
@@ -1136,7 +1132,6 @@ class AgentMultiScaleBasis(Agent):
         # write RewardFunction Tag
         self.write_reward_function_li(f, layer, xa_values_li, x_items_values_li, s_terminals_li, z_values_li,
                                       action_names_li, a_top)
-
         # close pomdpx tag
         f.write("</pomdpx>")
         f.close()
