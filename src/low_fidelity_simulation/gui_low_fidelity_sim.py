@@ -113,14 +113,14 @@ class GUI_LFS:
         self.cb_ag = ttk.Combobox(master=self.conf_frame, width=12)
         self.cb_ag['values'] = config.agent_types
         self.cb_ag.grid(column=1, row=2)
-        self.cb_ag.current(1)
+        self.cb_ag.current(0)
         self.lbl_ag_conf0 = tk.Label(master=self.conf_frame, text='initial x,y,theta:', font=('Arial', 12), anchor='w')
         self.lbl_ag_conf0.grid(column=2, row=2, sticky='w')
         self.tb_ag_x = tk.Entry(self.conf_frame, width=5)
         self.tb_ag_x.grid(column=3, row=2)
-        self.tb_ag_x.insert(0, '0.5')
+        self.tb_ag_x.insert(0, '1.0')
         self.tb_ag_y = tk.Entry(self.conf_frame, width=5)
-        self.tb_ag_y.insert(0, '0.5')
+        self.tb_ag_y.insert(0, '1.0')
         self.tb_ag_y.grid(column=4, row=2)
         self.tb_ag_theta = tk.Entry(self.conf_frame, width=5)
         self.tb_ag_theta.insert(0, '0')
@@ -156,6 +156,11 @@ class GUI_LFS:
         self.btn_start = tk.Button(self.button_frame, text='Start Simulation',
                                    command=lambda: self.__btn_start_command())
         self.btn_start.grid(column=2, row=1, sticky='w', padx=10, pady=10)
+        self.save_video = tk.IntVar()
+        self.chb_save_video = tk.Checkbutton(self.button_frame, variable=self.save_video, text='save video',
+                                             onvalue=1, offvalue=0)
+        self.chb_save_video.grid(column=3, row=1, sticky='w')
+
         # evaluation options
         self.lbl_visualisation = tk.Label(master=self.evaluation_frame, text='vis. resolution cells per meter:',
                                           font=('Arial', 12))
@@ -166,7 +171,7 @@ class GUI_LFS:
         self.lbl_timeout_time = tk.Label(master=self.evaluation_frame, text="sarsop timeout time:", font=('Arial', 12))
         self.lbl_timeout_time.grid(column=0, row=1, sticky='w')
         self.tb_timeout_time = tk.Entry(self.evaluation_frame, width=3)
-        self.tb_timeout_time.grid(column=1, row=1)
+        self.tb_timeout_time.grid(column=1, row=1, sticky='w')
         self.tb_timeout_time.insert(0, 5.0)
         self.lbl_b0_threshold = tk.Label(master=self.evaluation_frame, text='b0 treshold:', font=('Arial', 12))
         self.lbl_b0_threshold.grid(column=0, row=2, sticky='w')
@@ -220,6 +225,7 @@ class GUI_LFS:
         self.sim.set_timeout_time(timeout_time)
         self.sim.set_b0_threshold(b0_threshold)
         self.sim.set_print_every_timestep(True)
+        self.sim.set_save_video(self.save_video.get())
         # delete all current items
         self.sim.delete_items()
         item_map = {}
@@ -233,8 +239,9 @@ class GUI_LFS:
             try:
                 x, y = float(item_line.tb_x.get()), float(item_line.tb_y.get())
                 g_x, g_y = float(item_line.tb_gx.get()), float(item_line.tb_gy.get())
-            except:
+            except (TypeError, ValueError) as e:
                 messagebox.showinfo('Error', 'item configuration is not in correct format')
+                print(e)
                 return 'init_error'
             return_value = self.sim.set_item(item_line.cb_type.get(), x, y, g_x, g_y)
             if return_value == 'E:item':
@@ -261,8 +268,9 @@ class GUI_LFS:
                 try:
                     x, y = float(self.beliefspots_conf[i].tb_x.get()), float(self.beliefspots_conf[i].tb_y.get())
                     prob = float(self.beliefspots_conf[i].tb_prob.get())
-                except:
+                except (TypeError, ValueError) as e:
                     messagebox.showinfo('Error', 'belief configuration is not in correct format')
+                    print(e)
                     return 'init_error'
                 belief_spots[i, :] = [x, y, prob, item_map[self.beliefspots_conf[i].cb_type.get()]]
             self.sim.set_belief(belief_spots, beliefspots_width)
@@ -282,18 +290,14 @@ class GUI_LFS:
         self.items_conf[0].cb_type.current(0)
         self.items_conf[0].tb_x.insert(0, '2')
         self.items_conf[0].tb_y.insert(0, '2')
-        self.items_conf[0].tb_gx.insert(0, '4')
-        self.items_conf[0].tb_gy.insert(0, '4')
+        self.items_conf[0].tb_gx.insert(0, '2.0')
+        self.items_conf[0].tb_gy.insert(0, '8.0')
         # belief lines
         self.beliefspots_conf.append(GUIBeliefConf(self.belief_frame, 1))
-        self.beliefspots_conf.append(GUIBeliefConf(self.belief_frame, 2))
         # add 2 belief spots
         self.beliefspots_conf[0].tb_x.insert(0, '2')
         self.beliefspots_conf[0].tb_y.insert(0, '2')
-        self.beliefspots_conf[0].tb_prob.insert(0, '0.6')
-        self.beliefspots_conf[1].tb_x.insert(0, '5')
-        self.beliefspots_conf[1].tb_y.insert(0, '2')
-        self.beliefspots_conf[1].tb_prob.insert(0, '0.3')
+        self.beliefspots_conf[0].tb_prob.insert(0, '0.8')
 
     def __btn_add_item_command(self):
         item_i = GuiItemConf(item_nr=self.items_conf[-1].item_nr + 1, row_nr=self.items_conf[-1].row_nr + 1,
@@ -321,13 +325,14 @@ class GUI_LFS:
     def __btn_plot_world_command(self):
         # initialize grid with current settings
         if self.cb_env.get() != 'small' and self.cb_env.get() != 'big':
-            messagebox.showinfo('Error', 'environment is not in correct format')
+            messagebox.showinfo('Error', 'invalid/undefined environment')
             return
         self.sim.set_env_type(self.cb_env.get())
         try:
             ag_conf0_x, ag_conf0_y = float(self.tb_ag_x.get()), float(self.tb_ag_y.get())
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'agent configuration is not in correct format')
+            print(e)
             return
         self.sim.set_agent_conf0(ag_conf0_x, ag_conf0_y, 0)
         self.sim.draw_world(self.items_conf)
@@ -341,9 +346,10 @@ class GUI_LFS:
             try:
                 x, y = float(self.beliefspots_conf[i].tb_x.get()), float(self.beliefspots_conf[i].tb_y.get())
                 prob = float(self.beliefspots_conf[i].tb_prob.get())
-            except:
+            except (TypeError, ValueError) as e:
                 messagebox.showinfo('Error', 'belief configuration is not in correct format')
-                return 'init_error'
+                print(e)
+                return
         self.sim.set_env_type(self.cb_env.get())
         self.sim.draw_b0(self.beliefspots_conf, float(self.tb_beliefspot_width.get()), self.items_conf)
 
@@ -351,9 +357,9 @@ class GUI_LFS:
         # run simulation
         return_value = self.__run_simulation()
         if return_value == 'E:init':
-            do_nothing = True
+            pass
         elif return_value == 'init_error':
-            do_nothing = True
+            pass
         else:
             self.sim.draw_documentation()
 
@@ -461,7 +467,6 @@ class GUI_LFS:
             b_x = [13.5]
             b_y = [10.0]
             b_p = [0.8]
-
         else:
             messagebox.showinfo('Error', 'invalid test-scenario')
             return
@@ -473,7 +478,7 @@ class GUI_LFS:
         # delete or add item lines
         while len(self.items_conf) < nr_of_items:
             self.__btn_add_item_command()
-        while (len(self.items_conf) > nr_of_items):
+        while len(self.items_conf) > nr_of_items:
             self.__btn_del_item_command()
         # set item values
         for idx, item_line in enumerate(self.items_conf):
@@ -489,7 +494,7 @@ class GUI_LFS:
         # delete or add belief lines
         while len(self.beliefspots_conf) < len(belief_types):
             self.__btn_add_bel_command()
-        while (len(self.beliefspots_conf) > len(belief_types)):
+        while len(self.beliefspots_conf) > len(belief_types):
             self.__btn_del_bel_command()
         # set belief values
         for idx, belief_line in enumerate(self.beliefspots_conf):
@@ -558,7 +563,7 @@ class GUI_LFS:
         except:
             messagebox.showinfo('Error', 'agent configuration is not in correct format')
             return 'init_error'
-        if self.cb_ag.get() not in auxiliary_functions.get_agent_types(environment_type):
+        if self.cb_ag.get() not in config.agent_types:
             messagebox.showinfo('Error', 'invalid agent type for this environment')
             return 'init_error'
         if environment_type != 'small' and environment_type != 'big':
@@ -659,8 +664,9 @@ class GUI_LFS:
             ' ', '') + '/' + agent_type + '/'
         try:
             os.mkdir(directory)
-        except:
-            do_nothing = True
+        except OSError as e:
+            print(e)
+            return 'E:mkdir failed'
         f_overview = open(directory + 'overview.txt', 'w+')
         f_overview.write('agent_type={}\n'.format(agent_type))
         f_overview.write('max_it={}\n'.format(max_it))
@@ -743,30 +749,35 @@ class GUI_LFS:
             ag_conf0_x, ag_conf0_y, ag_conf0_theta = float(self.tb_ag_x.get()), float(self.tb_ag_y.get()), \
                                                      auxiliary_functions.angle_consistency(
                                                          auxiliary_functions.deg_to_rad(float(self.tb_ag_theta.get())))
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'agent configuration is not in correct format')
+            print(e)
             return 'init_error'
         agent_type = self.cb_ag.get()
         environment_type = self.cb_env.get()
-        if not agent_type in auxiliary_functions.get_agent_types(environment_type):
+        if not agent_type in config.agent_types:
             messagebox.showinfo('Error', 'invalid agent type for this environment')
             return 'init_error'
         try:
             max_it = int(self.tb_maxit.get())
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'invalid max_it format, needs to be integer')
+            print(e)
             return 'init_error'
         try:
             visualisation_ratio = -1
             if self.tb_visualisation.get() != 'none':
                 visualisation_ratio = int(self.tb_visualisation.get())
-
+        except (TypeError, ValueError) as e:
+            messagebox.showinfo(('Error', 'invalid visualisation number, needs to be integer between 1 and 10'))
+            print(e)
         except:
             messagebox.showinfo(('Error', 'invalid visualisation number, needs to be integer between 1 and 10'))
         try:
             timeout_time = float(self.tb_timeout_time.get())
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'timeout_time needs to be a float')
+            print(e)
             return 'init_error'
         try:
             b0_threshold = float(self.tb_b0_threshold.get())
@@ -774,13 +785,15 @@ class GUI_LFS:
                 b0_threshold = 1.0
             elif b0_threshold < 0.99:
                 b0_threshold = 0.99
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'b0_threshold needs to be a float between 0.99 and 1.0 (reccomended: 0.999)')
+            print(e)
             return 'init_error'
         try:
             beliefspot_width = float(self.tb_beliefspot_width.get())
-        except:
+        except (TypeError, ValueError) as e:
             messagebox.showinfo('Error', 'beliefspot_width needs to be a positive float')
+            print(e)
             return 'init_error'
 
         return agent_type, ag_conf0_x, ag_conf0_y, ag_conf0_theta, environment_type, max_it, visualisation_ratio, \

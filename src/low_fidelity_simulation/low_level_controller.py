@@ -1,7 +1,8 @@
+import math
+
 from src.auxiliary_files import path_planning
 from src.multi_scale_search import auxiliary_functions
 
-import math
 
 # Controller for the Low Fidelity Simulation (LFS)
 class ControllerLFS(object):

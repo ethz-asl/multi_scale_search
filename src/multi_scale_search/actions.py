@@ -1,12 +1,11 @@
 import math
 
 import numpy as np
-from src.auxiliary_files import path_planning
 from numpy import linalg as LA
 
+import config
 from src.auxiliary_files.grid import Grid
 from src.multi_scale_search import auxiliary_functions
-import config
 
 
 class Action:
@@ -24,7 +23,7 @@ class Action:
         self.start_max_belief = 0
         self.initialize_t_expected(xa_values, nodegraph)
         self.initial_call = True
-        #self.reference = []
+        # self.reference = []
         self.goal_ref = [-1.0, -1.0, -1.0]
 
         self.start_xa = -1
@@ -49,7 +48,7 @@ class Action:
                 print('replanning\n')
                 self.steps_since_replanning = 0
                 self.goal_ref = self.core_algorithm(s, item_map, agent_x, agent_y, agent_theta, grid, nodegraph, items,
-                                                     b0)
+                                                    b0)
         self.steps_since_replanning += 1
         return self.goal_ref
 
@@ -261,7 +260,7 @@ class Pickup(Action):
         dist = math.sqrt((agent_x - bmax_x) ** 2 + (agent_y - bmax_y) ** 2)
         theta_ref = auxiliary_functions.angle_consistency(math.atan2(bmax_y - agent_y, bmax_x - agent_x))
         delta_theta = math.fabs(auxiliary_functions.angle_consistency(theta_ref - agent_theta))
-        if dist < config.robot_range-0.1 and delta_theta < 0.2:
+        if dist < config.robot_range - 0.1 and delta_theta < 0.2:
             goal_ref = 'pickup_' + item.name
             return goal_ref
 
@@ -352,7 +351,7 @@ class Release(Action):
         dist = math.sqrt((item.goal_x - agent_x) ** 2 + (item.goal_y - agent_y) ** 2)
         dist_theta = auxiliary_functions.angle_consistency(theta_ref - agent_theta)
         print('dist, dist_theta = {}, {}'.format(dist, dist_theta))
-        if dist < config.robot_range-0.1 and dist_theta < 0.2:
+        if dist < config.robot_range - 0.1 and dist_theta < 0.2:
             goal_ref = 'release_item'
             return goal_ref
         goal_ref = [x_ref, y_ref, theta_ref]
@@ -492,8 +491,10 @@ class LookAround(Action):
                 # get average of the highest belief cells
                 max_belief_values = b0.get_N_max_belief_values(node_nr=xa, N=100)
                 avr_max_belief = np.sum(max_belief_values) / len(max_belief_values)
-                if avr_max_belief - median_belief < (1 / 20.0) * (self.initial_avr_max_belief - self.initial_median_belief) :
-                    print('LOOKAROUND FINISHED, PEAK REDUCED BY {}'.format((self.initial_avr_max_belief - self.initial_median_belief) / avr_max_belief - median_belief))
+                if avr_max_belief - median_belief < (1 / 20.0) * (
+                        self.initial_avr_max_belief - self.initial_median_belief):
+                    print('LOOKAROUND FINISHED, PEAK REDUCED BY {}'.format(
+                        (self.initial_avr_max_belief - self.initial_median_belief) / avr_max_belief - median_belief))
                     return True, False
         return False, False
 
@@ -543,10 +544,11 @@ class LookAround(Action):
         # STEP 3: calculate value function for all candidate cells
         u_sum_b = (np.array(sum_b_arr) - 0.0000000001) / (max(sum_b_arr) - 0.0000000001)
         u_delta_t = np.ones(delta_t_arr.shape) - (delta_t_arr - min(delta_t_arr)) / (
-                    max(delta_t_arr) - min(delta_t_arr))
+                max(delta_t_arr) - min(delta_t_arr))
         candidate_value = 0.5 * u_sum_b + 0.5 * u_delta_t
         idx_best = np.argmax(candidate_value)
-        candidate_x, candidate_y = self.node_grids[xa].get_position_by_indices(candidate_u[idx_best], candidate_v[idx_best])
+        candidate_x, candidate_y = self.node_grids[xa].get_position_by_indices(candidate_u[idx_best],
+                                                                               candidate_v[idx_best])
         goal_ref = [candidate_x, candidate_y, auxiliary_functions.angle_consistency(candidate_theta[idx_best])]
         return goal_ref
 

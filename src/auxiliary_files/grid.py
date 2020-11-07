@@ -6,8 +6,7 @@ import numpy as np
 class Grid:
 
     def __init__(self, nr_of_cells_x=-1, nr_of_cells_y=-1, world_width=-1, world_height=-1, default_value='free',
-                 grid_name='none',
-                 default_seen=1, x0=0, y0=0):
+                 grid_name='none', default_seen=1, x0=0, y0=0):
         self.nr_of_cells_x = nr_of_cells_x
         self.nr_of_cells_y = nr_of_cells_y
         self.total_width = float(world_width)
@@ -123,7 +122,6 @@ class Grid:
         for idx in range(len(obs_u_sel)):
             self.cells[obs_v_sel[idx]][obs_u_sel[idx]].value = 'occupied'
             self.cells[obs_v_sel[idx]][obs_u_sel[idx]].seen = 0
-            self.cells[obs_v_sel[idx]][obs_u_sel[idx]].furniture_type = observations_np[sel, 2][idx]
 
     def set_cell_value(self, value, cell_u, cell_v):
         self.cells[cell_v][cell_u].set_value(value)

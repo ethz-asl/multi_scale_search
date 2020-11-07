@@ -1,6 +1,5 @@
 # This file implements the A* algorithm
-# This code is copied from  https://gist.github.com/jamiees2/5531924 and modified by myself to include theta and
-# construct the graph on the fly
+# This code is copied from  https://gist.github.com/jamiees2/5531924 and modified by myself
 import math
 import time
 
@@ -138,69 +137,6 @@ def heuristic(node, goal_u, goal_v, cell_width, cell_height):
     cost += dist / config.robot_speed
 
     return cost
-
-
-# this version of astar considers robot-angles and does not construct the entire graph:
-# it build the part of the graph it needs on the fly using
-def astar_theta(start_u, start_v, start_theta, goal_u, goal_v, grid, goal_theta='any'):
-    start_time = time.time()
-    # initialize open and closed set
-    open_dict = {}  # key = point(=(u,v)), value = node object
-    closed_dict = {}
-    # set start node
-    current = Node(u=start_u, v=start_v, theta=start_theta)
-    open_dict[(start_u, start_v, start_theta)] = current
-    # while open-set not empty
-    while len(open_dict) > 0:
-        # get node in open_dict with lowest G + H score
-        current = min(open_dict.values(), key=lambda o: o.G + o.H)
-        if current.u == goal_u and current.v == goal_v and \
-                (goal_theta == 'any' or goal_theta - 0.001 < current.theta < goal_theta + 0.001):
-            path = []
-            final_G = current.G
-            while current.parent:
-                path.append((current.u, current.v, current.theta))
-                current = current.parent
-            # path.append(current.point)  # only needed if
-            end_time = time.time()
-            delta_time = end_time - start_time
-            print('astar time = {}'.format(delta_time))
-            return path[::-1], final_G  # path vector is from goal to start, revert it before returning
-        # remove current node from open set, add to closed set
-        del open_dict[(current.u, current.v, current.theta)]
-        closed_dict[(current.u, current.v, current.theta)] = current
-        # loop through node's neighbours
-        neighbour_nodes = get_neighbours_theta(current, grid.cells)
-        for node_key in neighbour_nodes:
-            new_g = current.G + transition_cost_theta(current, node_key, grid.cell_width, grid.cell_height)
-            # if node already in closed set
-            if node_key in closed_dict.keys():
-                if new_g < closed_dict[node_key].G:
-                    # remove node form closed_dict and add it to open_dict again
-                    node = closed_dict[node_key]
-                    del closed_dict[node_key]
-                    node.G = new_g
-                    open_dict[node_key] = node
-            # if already in open_dict
-            elif node_key in open_dict:
-                # check if we beat the G score
-                if new_g < open_dict[node_key].G:
-                    # update cost and parent of node
-                    open_dict[node_key].G = new_g
-                    open_dict[node_key].parent = current
-            # if not in open_dict and not in closed dict:
-            else:
-                # add new node to open_dict
-                open_dict[node_key] = Node(u=node_key[0], v=node_key[1], theta=node_key[2])
-                # calculate G and H score for the node and add to open_dict
-                open_dict[node_key].G = new_g
-                open_dict[node_key].H = heuristic_theta(open_dict[node_key], (goal_u, goal_v, goal_theta),
-                                                        grid.cell_width,
-                                                        grid.cell_height)
-                # set parent to current node
-                open_dict[node_key].parent = current
-    # Throw an exception if there is no path
-    raise ValueError('No Path Found')
 
 
 def get_neighbours_theta(node, grid_cells):

@@ -1,5 +1,6 @@
 import math
 
+
 class Item:
     def __init__(self, item_type='none', x=-1, y=-1, u=-1, v=-1):
         self.item_type = item_type

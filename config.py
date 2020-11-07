@@ -3,8 +3,6 @@ import math
 import os
 # global variables
 
-
-
 ROOT_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/'
 SARSOP_SRC_FOLDER = ROOT_FOLDER + 'third_party/sarsop/src/'
 # initialize all variables with the default values which correspond to the low fidelity simulation.
@@ -58,8 +56,8 @@ robot_viewing_cone = [[(0, -0.200001), (2.59807707737872, -1.7000015)],
                       [(0, 0.18666760000000002), (2.648843661524374, 1.595082757829235)]]
 
 
-def init(simulation_type):
-    if simulation_type == 'low_fidelity_simulation':
+def init(simulation_type_):
+    if simulation_type_ == 'low_fidelity_simulation':
         global simulation_name, BASE_FOLDER_SIM, solving_precision, agent_types, POMDP_agent_types, \
             multiscale_agent_types, item_types, grid_ref_width, grid_ref_height, \
             robot_range, robot_speed, robot_angular_speed, robot_release_time, robot_pickup_time, world_discretisation
@@ -80,9 +78,31 @@ def init(simulation_type):
         robot_pickup_time = config_low_fidelity_sim.robot_pickup_time
         world_discretisation = config_low_fidelity_sim.world_discretisation
 
-    elif simulation_type == 'ros_simulation':
+    elif simulation_type_ == 'ros_simulation':
         # not implemented (yet)
         pass
 
 
-test = True
+def get_pickup_reward(environment):
+    if simulation_name == config_low_fidelity_sim.simulation_name:
+        return config_low_fidelity_sim.get_pickup_reward(environment)
+
+
+def get_delivery_reward(environment):
+    if simulation_name == config_low_fidelity_sim.simulation_name:
+        return config_low_fidelity_sim.get_delivery_reward(environment)
+
+
+def get_penalty_reward(environment, layer):
+    if simulation_name == config_low_fidelity_sim.simulation_name:
+        return config_low_fidelity_sim.get_penalty_reward(environment, layer)
+
+
+def get_recs_of_nodes(rec_env, environment='small', nr_of_layers=2):
+    if simulation_name == config_low_fidelity_sim.simulation_name:
+        return config_low_fidelity_sim.get_recs_of_nodes(rec_env, environment, nr_of_layers)
+
+
+def construct_nodegraph_multiscale(nodegraph, layer, environment='small'):
+    if simulation_name == config_low_fidelity_sim.simulation_name:
+        return config_low_fidelity_sim.construct_nodegraph_multiscale(nodegraph, layer, environment)

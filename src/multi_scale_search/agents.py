@@ -53,11 +53,11 @@ class AgentFLAT(Agent):
         self.layer = bottom_layer
         self.nr_of_layers = self.layer + 1
         if environment != 'None' and rec_env is not None:
-            node_recs = auxiliary_functions.get_recs_of_nodes(rec_env, environment=self.environment)
+            node_recs = config.get_recs_of_nodes(rec_env, environment=self.environment)
             # create nodegraph
             self.nodegraph = NodeGraph(nr_of_nodes=len(node_recs), node_recs=node_recs)
-            auxiliary_functions.construct_nodegraph_multiscale(self.nodegraph, layer=self.layer,
-                                                               environment=self.environment)
+            config.construct_nodegraph_multiscale(self.nodegraph, layer=self.layer,
+                                                  environment=self.environment)
 
         # initialize state
         self.s = {'xa': self.pos_to_node(pose0[0], pose0[1])}
@@ -365,7 +365,7 @@ class AgentFLAT(Agent):
         f.write("\t<Description> simplified problem for service robot. No furniture, static scene.\n")
         f.write("\t</Description>\n")
         # write Discount tag
-        f.write("\t<Discount> {} </Discount>\n".format(auxiliary_functions.get_discount_factor(self.environment)))
+        f.write("\t<Discount> {} </Discount>\n".format(auxiliary_functions.get_discount_factor()))
         # write Variable Tag
         self.write_variables(f, nr_of_nodes, action_names)
         # write InitialStateBelief tag
@@ -1099,6 +1099,7 @@ class AgentFLAT(Agent):
         f.write("\t\t\t\t</Entry>\n")
 
 
+# Method M1 corresponds to Action-Propagation (AP)
 class AgentMultiScaleM1(AgentMultiScaleBasis):
     def __init__(self, grid=Grid(1, 1, 1, 1), conf0=(0, 0, 0), nr_of_layers=2, node_mapping=None, rec_env=None,
                  item_names=('mug'), environment='None'):
@@ -1314,6 +1315,7 @@ class AgentMultiScaleM1(AgentMultiScaleBasis):
         return value_table_string
 
 
+# Method M2 corresponds to Action-Value-Propagation (AVP)
 class AgentMultiScaleM2(AgentMultiScaleBasis):
     def __init__(self, grid=Grid(1, 1, 1, 1), conf0=(0, 0, 0), nr_of_layers=2, node_mapping=None, rec_env=None,
                  item_names=('mug'), environment='None'):
@@ -1968,6 +1970,8 @@ class AgentMultiScaleM2(AgentMultiScaleBasis):
         return belief_next_enumerated
 
 
+# Method M3 corresponds to Value-Propagation (VP).
+# Note that M3 can have stability issues which result in navigating between to same set of nodes for ever.
 class AgentMultiScaleM3(AgentMultiScaleBasis):
     def __init__(self, grid=Grid(1, 1, 1, 1), conf0=(0, 0, 0), nr_of_layers=2, node_mapping=None, rec_env=None,
                  item_names=('mug'), environment='None'):
@@ -2002,7 +2006,7 @@ class AgentMultiScaleM3(AgentMultiScaleBasis):
         if layer > 0:
             for s_terminal in s_terminals_li:
                 if s_terminal['xa'][0] != '*' and s_terminal['xa'][0] not in \
-                        self.get_subnodes(node=self.s_layers[layer-1]['xa'], layer=layer-1):
+                        self.get_subnodes(node=self.s_layers[layer - 1]['xa'], layer=layer - 1):
                     xa_top_next = self.var_lower_to_var_top(layer_lower=layer, var_lower=s_terminal['xa'][0])
                 else:
                     continue
@@ -2292,7 +2296,7 @@ class AgentMultiScaleM3(AgentMultiScaleBasis):
                                                                            var_lower=s_terminal_li['xa'][0]):
                     V_penalty = 0.0
                 else:
-                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+                    V_penalty = config.get_penalty_reward(self.environment, layer)
         elif a_top[0:6] == 'pickup':
             key_list = ['xa'] + list(range(0, self.nr_of_items))
             for var_name in key_list:
@@ -2301,7 +2305,7 @@ class AgentMultiScaleM3(AgentMultiScaleBasis):
                     if var_val[0] == 'agent':
                         V_penalty = 0.0
                         break
-                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+                    V_penalty = config.get_penalty_reward(self.environment, layer)
         elif a_top[0:6] == 'release':
             key_list = ['xa'] + list(range(0, self.nr_of_items))
             for var_name in key_list:
@@ -2310,7 +2314,7 @@ class AgentMultiScaleM3(AgentMultiScaleBasis):
                     if var_val[0] != 'agent' and len(var_val[0]) == 1:
                         V_penalty = 0.0
                         break
-                    V_penalty = auxiliary_functions.get_penalty_reward(self.environment, layer)
+                    V_penalty = config.get_penalty_reward(self.environment, layer)
 
         # STEP 1: get all terminal state variations
         value_table_string = ''

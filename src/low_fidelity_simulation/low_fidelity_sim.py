@@ -1,5 +1,3 @@
-# from scripts import run_experiment
-
 import math
 import random
 from collections import OrderedDict
@@ -19,7 +17,7 @@ from src.auxiliary_files.rectangle import Rectangle
 from src.low_fidelity_simulation.worldmodel import WorldModel
 from src.multi_scale_search import auxiliary_functions
 import config
-# from agent_b1 import AgentB1
+
 from src.multi_scale_search.agents import AgentFLAT
 from src.multi_scale_search.belief import Belief
 from src.multi_scale_search.core import Agent
@@ -56,6 +54,7 @@ class LowFidelitySimulation:
         self.timeout_time = 5.0
         self.print_every_timestep = True
         self.controller = ControllerLFS(self.agent_grid)
+        self.save_video = False
 
     def reinitialize(self):
         # clean histories
@@ -96,46 +95,6 @@ class LowFidelitySimulation:
             self.agent = AgentMultiScaleM3(self.agent_grid, self.config0, nr_of_layers, node_mapping=node_mapping,
                                            rec_env=self.rec_env, item_names=item_names, environment=self.environment)
 
-        # if self.agent_type == 'b1':
-        #     self.agent = AgentB1(self.agent_grid, self.config0)
-
-        #     self.agent = AgentFLAT(self.agent_grid, self.config0, self.rec_env, item_names)
-        # elif self.agent_type == 'DualScaleM1':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM1(self.agent_grid, self.config0, nr_of_layers=2, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
-        # elif self.agent_type == 'DualScaleM2':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM2(self.agent_grid, self.config0, nr_of_layers=2, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
-        # elif self.agent_type == 'DualScaleM3':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM3(self.agent_grid, self.config0, nr_of_layers=2, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
-        # elif self.agent_type == 'MultiScaleM1':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM1(self.agent_grid, self.config0, nr_of_layers=3, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
-        # elif self.agent_type == 'MultiScaleM2':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM2(self.agent_grid, self.config0, nr_of_layers=3, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
-        # elif self.agent_type == 'MultiScaleM3':
-        #     item_names = []
-        #     for item in self.items:
-        #         item_names += [item.item_type]
-        #     self.agent = AgentMultiScaleM3(self.agent_grid, self.config0, nr_of_layers=3, node_mapping=node_mapping,
-        #                                    rec_env=self.rec_env, item_names=item_names)
         # initialize the world
         self.world = WorldModel(self.world_grid, self.config0)
         # add items to the world_grid
@@ -438,7 +397,8 @@ class LowFidelitySimulation:
 
         anim = animation.FuncAnimation(fig1, animate, init_func=init, frames=len(self.history_x_values.keys()),
                                        interval=100, repeat_delay=500, blit=True)
-        # anim.save('animation.mp4')
+        if self.save_video:
+            anim.save('animation.mp4')
 
     def draw_entire_game(self):
         fig = plt.figure()
@@ -535,6 +495,12 @@ class LowFidelitySimulation:
 
     def set_max_it(self, max_it):
         self.max_it = max_it
+
+    def set_save_video(self, save_video):
+        if save_video == 0:
+            self.save_video = False
+        else:
+            self.save_video = True
 
     def set_item(self, item_type, in_x, in_y, g_x, g_y):
         if not self.initialized_grids:

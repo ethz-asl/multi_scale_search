@@ -1,11 +1,13 @@
-from __future__ import division # required for standard float division in python 2.7
-import config
-from src.auxiliary_files.grid import Grid
-import numpy as np
+from __future__ import division  # required for standard float division in python 2.7
+
 import copy
 import os
 import time
 import xml.etree.ElementTree as ET
+
+import numpy as np
+
+import config
 from src.auxiliary_files.grid import Grid
 from src.multi_scale_search import auxiliary_functions
 from src.multi_scale_search.actions import LookAround
@@ -56,7 +58,7 @@ class POMDPProblem(object):
 
 class NodeGraph(object):
     # node_recs is a dict with key = node_nr, value  = list of rectangles
-    def __init__(self, nr_of_nodes=9, node_recs={}):
+    def __init__(self, nr_of_nodes=9, node_recs=None):
         self.node_recs = node_recs
         # graph is dictionary with key = node-number and value = list of node-numbers the node is connected to
         self.graph = {}
@@ -80,7 +82,7 @@ class NodeGraph(object):
     def get_center_of_gravity(self, node_nr):
         x_mid_points, y_mid_points, weights = [], [], []
         for rec in self.node_recs[node_nr]:
-            x,y = rec.get_mid_point()
+            x, y = rec.get_mid_point()
             x_mid_points.append(x)
             y_mid_points.append(y)
             weights.append(rec.get_area())
@@ -94,7 +96,7 @@ class NodeGraph(object):
         self.graph[n_j].append(n_i)
 
     def get_nav_actions(self, n):
-        nav_actions = []    # list of strings
+        nav_actions = []  # list of strings
         connected_nodes = self.graph[n]
         for i in connected_nodes:
             if i < n:
@@ -152,14 +154,14 @@ class Agent(object):
         self.y = pose0[1]
         self.theta = pose0[2]
         self.u, self.v = self.grid.get_cell_indices_by_position(self.x, self.y)
-        self.grid.cells[self.v][self.u].seen = 0    # this cell is observed
-        self.carries = 'none'    # at start agent does not carry anything
+        self.grid.cells[self.v][self.u].seen = 0  # this cell is observed
+        self.carries = 'none'  # at start agent does not carry anything
         self.environment = environment
         # initialize the list of items the agent is looking for and the goal (right now its only 'table')
         self.task = {}
         self.task_finished = []
         self.nr_of_items = 1
-        self.items = []     # list of items. its up to the specific agent how to represent items and furniture
+        self.items = []  # list of items. its up to the specific agent how to represent items and furniture
         self.replanning = False  # this is only needed for the documentation in the end
         self.computation_time = 0
         self.computation_time_for_each_action = []
@@ -267,16 +269,16 @@ class AgentMultiScaleBasis(Agent):
         self.nodegraphs_layers = []
         for layer in range(nr_of_layers):
             if layer == nr_of_layers - 1:
-                node_recs_layer = auxiliary_functions.get_recs_of_nodes(rec_env, environment=self.environment,
-                                                                        nr_of_layers=self.nr_of_layers)
+                node_recs_layer = config.get_recs_of_nodes(rec_env, environment=self.environment,
+                                                           nr_of_layers=self.nr_of_layers)
                 self.nodegraphs_layers.append(NodeGraph(
                     nr_of_nodes=sum([len(node_mapping[layer - 1][key]) for key in node_mapping[layer - 1].keys()]),
                     node_recs=node_recs_layer))
                 # config.draw_rectangles(self.nodegraphs_layers[layer].get_all_recs_as_flat_list())
             else:
                 self.nodegraphs_layers.append(NodeGraph(nr_of_nodes=len(node_mapping[layer].keys())))
-            auxiliary_functions.construct_nodegraph_multiscale(nodegraph=self.nodegraphs_layers[-1], layer=layer,
-                                                               environment=self.environment)
+            config.construct_nodegraph_multiscale(nodegraph=self.nodegraphs_layers[-1], layer=layer,
+                                                  environment=self.environment)
         self.nr_of_nodes = [len(self.nodegraphs_layers[layer].graph.keys()) for layer in range(self.nr_of_layers)]
         self.current_action_name_lN = 'none'  # this is the actual subroutine
         # create item-mapping
@@ -620,7 +622,7 @@ class AgentMultiScaleBasis(Agent):
         a_lj = remaining_OL_policy[0]
         s_lj = self.next_state(list(s_lj_0), a_lj)
         return self.observation_model_lj(layer_j, z_lj, a_lj, s_lj) + (
-                    1 - self.observation_model_lj(layer_j, z_lj, a_lj, s_lj)) * \
+                1 - self.observation_model_lj(layer_j, z_lj, a_lj, s_lj)) * \
                self.O_pi_lj(layer_j, z_lj, s_lj, remaining_OL_policy[1:])
 
     def observation_model_lj(self, layer_j, z_lj, a_lj, s_lj):
@@ -1119,7 +1121,7 @@ class AgentMultiScaleBasis(Agent):
         f.write("\t<Description> MultiScale POMDP Layer {}\n".format(layer))
         f.write("\t</Description>\n")
         # write Discount tag
-        f.write("\t<Discount> {} </Discount>\n".format(auxiliary_functions.get_discount_factor(self.environment)))
+        f.write("\t<Discount> {} </Discount>\n".format(auxiliary_functions.get_discount_factor()))
         # write Variable Tag
         self.write_variables_li(f, xa_values_li, x_items_values_li, action_names_li, z_values_li)
         # write InitialStateBelief tag
@@ -2003,7 +2005,7 @@ class AgentMultiScaleBasis(Agent):
                         if xi == 'not_here' or xi == 'agent':
                             value_table_string += ' 0.0'
                         else:
-                            value_table_string += ' {}'.format(auxiliary_functions.get_pickup_reward(self.environment))
+                            value_table_string += ' {}'.format(config.get_pickup_reward(self.environment))
                     self.write_entry_valuetable(f, instance_string, value_table_string)
         # releasing item:
         for item_idx in range(self.nr_of_items):
@@ -2022,7 +2024,7 @@ class AgentMultiScaleBasis(Agent):
                     for item_idx2 in x_items_values_li.keys():
                         instance_string += ' *'  # FOR RELEASING IN SUBTASK IT DOES NOT MATTER WHAT NEXT STATE IS
                     self.write_entry_valuetable(f, instance_string, value_table_string='-{}'.format(
-                        auxiliary_functions.get_pickup_reward(self.environment)))
+                        config.get_pickup_reward(self.environment)))
 
         # reward 0 if already in terminal state
         for s_terminal in s_terminals_li:
@@ -2085,7 +2087,7 @@ class AgentMultiScaleBasis(Agent):
                             else:
                                 instance_string += ' *'
                     self.write_entry_valuetable(f, instance_string, value_table_string='{}'.format(
-                        auxiliary_functions.get_delivery_reward(self.environment)))
+                        config.get_delivery_reward(self.environment)))
                 # picking up item from goal location
                 if 'pickup{}'.format(item_idx) in action_names_li:
                     instance_string = 'apickup{} s{}'.format(item_idx, self.items[item_idx].goal_nodes_layers[layer])
@@ -2102,7 +2104,7 @@ class AgentMultiScaleBasis(Agent):
                             else:
                                 instance_string += ' *'
                     self.write_entry_valuetable(f, instance_string, value_table_string='-{}'.format(
-                        auxiliary_functions.get_delivery_reward(self.environment)))
+                        config.get_delivery_reward(self.environment)))
 
         # reward 0 if already in terminal state
         for s_terminal in s_terminals_li:
@@ -2183,7 +2185,3 @@ class AgentMultiScaleBasis(Agent):
         f.write("\t\t\t\t\t<Instance>{}</Instance>\n".format(instance_string))
         f.write("\t\t\t\t\t<ValueTable>{}</ValueTable>\n".format(value_table_string))
         f.write("\t\t\t\t</Entry>\n")
-
-
-
-

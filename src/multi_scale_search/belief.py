@@ -222,7 +222,6 @@ class Belief:
                 belief_spots_new.append(bs)
         self.belief_spots = belief_spots_new
 
-
     def set_all_belief_spots(self):
         # fill the grid uniformly
         for item_nr in range(self.nr_of_items):
@@ -248,8 +247,8 @@ class Belief:
 
     # if item_nr = -1 -> belief is normalized for all items
     # b_tot is either a scalar if item_nr != -1 or a list otherwise, containing the normalization constant for the item(s)
-    def normalize_belief(self, item_nr=-1, belief_grids=[]):
-        if len(belief_grids) == 0:
+    def normalize_belief(self, item_nr=-1, belief_grids=None):
+        if belief_grids is None:
             belief_grids = self.belief_grids
         total_belief_per_item = np.array([0.0] * self.nr_of_items)
         for n in range(len(belief_grids)):
@@ -278,7 +277,7 @@ class Belief:
 
     # observations = [(x0,y0), (x1,y1), ..., (xm, ym)]
     def get_total_belief_of_observations(self, observations):
-        total_belief_vector = np.zeros((self.nr_of_items))
+        total_belief_vector = np.zeros(self.nr_of_items)
         obs_set = set()  # key = (node_nr, bg_nr, u, v), value = belief_vector at that (uniquely identified) cell
         for obs in observations:
             bg_nr = self.get_bg_nr(x=obs[0], y=obs[1])

@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+
 class Rectangle:
     def __init__(self, x0=-1, y0=-1, width=-1, height=-1):
         self.x0 = x0
