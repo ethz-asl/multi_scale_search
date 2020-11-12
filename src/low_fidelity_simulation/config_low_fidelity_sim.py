@@ -2,7 +2,7 @@
 import math
 import os
 
-from src.auxiliary_files.rectangle import Rectangle
+from auxiliary_files.rectangle import Rectangle
 
 simulation_name = 'low_fidelity_simulation'
 BASE_FOLDER_SIM = os.path.dirname(os.path.abspath(__file__)) + '/'

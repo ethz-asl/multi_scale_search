@@ -4,10 +4,10 @@ import logging
 import numpy as np
 from numpy import linalg as LA
 
-from src.auxiliary_files.grid import Grid
-from src.auxiliary_files.item import Item
-from src.multi_scale_search import auxiliary_functions
-from src.multi_scale_search.core import O_Cell
+from auxiliary_files.grid import Grid
+from auxiliary_files.item import Item
+from multi_scale_search import auxiliary_functions
+from multi_scale_search.core import O_Cell
 import config
 
 

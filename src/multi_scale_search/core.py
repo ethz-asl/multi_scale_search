@@ -9,14 +9,14 @@ import xml.etree.ElementTree as ET
 import numpy as np
 
 import config
-from src.auxiliary_files.grid import Grid
-from src.multi_scale_search import auxiliary_functions
-from src.multi_scale_search.actions import LookAround
-from src.multi_scale_search.actions import Navigate
-from src.multi_scale_search.actions import Pickup
-from src.multi_scale_search.actions import Release
-from src.multi_scale_search.belief import Belief
-from src.multi_scale_search.belief import BeliefRepresentation
+from auxiliary_files.grid import Grid
+from multi_scale_search import auxiliary_functions
+from multi_scale_search.actions import LookAround
+from multi_scale_search.actions import Navigate
+from multi_scale_search.actions import Pickup
+from multi_scale_search.actions import Release
+from multi_scale_search.belief import Belief
+from multi_scale_search.belief import BeliefRepresentation
 
 
 # core.py consists of:

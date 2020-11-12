@@ -9,18 +9,18 @@ import xml.etree.ElementTree as ET
 import numpy as np
 
 import config
-from src.auxiliary_files.grid import Grid
-from src.multi_scale_search import auxiliary_functions
-from src.multi_scale_search.actions import LookAround
-from src.multi_scale_search.actions import Navigate
-from src.multi_scale_search.actions import Pickup
-from src.multi_scale_search.actions import Release
-from src.multi_scale_search.belief import Belief
-from src.multi_scale_search.belief import BeliefRepresentation
-from src.multi_scale_search.core import Agent
-from src.multi_scale_search.core import AgentMultiScaleBasis
-from src.multi_scale_search.core import NodeGraph
-from src.multi_scale_search.core import POMDPProblem
+from auxiliary_files.grid import Grid
+from multi_scale_search import auxiliary_functions
+from multi_scale_search.actions import LookAround
+from multi_scale_search.actions import Navigate
+from multi_scale_search.actions import Pickup
+from multi_scale_search.actions import Release
+from multi_scale_search.belief import Belief
+from multi_scale_search.belief import BeliefRepresentation
+from multi_scale_search.core import Agent
+from multi_scale_search.core import AgentMultiScaleBasis
+from multi_scale_search.core import NodeGraph
+from multi_scale_search.core import POMDPProblem
 
 
 class Item:

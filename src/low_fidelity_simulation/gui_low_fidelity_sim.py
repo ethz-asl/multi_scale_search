@@ -6,8 +6,8 @@ from tkinter import ttk
 import numpy as np
 
 import config
-from src.low_fidelity_simulation.low_fidelity_sim import LowFidelitySimulation
-from src.multi_scale_search import auxiliary_functions
+from low_fidelity_simulation.low_fidelity_sim import LowFidelitySimulation
+from multi_scale_search import auxiliary_functions
 
 
 class GuiItemConf:

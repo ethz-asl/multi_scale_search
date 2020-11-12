@@ -9,20 +9,20 @@ from matplotlib import animation
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import LogNorm
 
-from src.auxiliary_files.grid import Grid
-from src.auxiliary_files.item import Item
-from src.multi_scale_search.agents import AgentMultiScaleM1
-from src.multi_scale_search.agents import AgentMultiScaleM2
-from src.multi_scale_search.agents import AgentMultiScaleM3
-from src.auxiliary_files.rectangle import Rectangle
-from src.low_fidelity_simulation.worldmodel import WorldModel
-from src.multi_scale_search import auxiliary_functions
+from auxiliary_files.grid import Grid
+from auxiliary_files.item import Item
+from multi_scale_search.agents import AgentMultiScaleM1
+from multi_scale_search.agents import AgentMultiScaleM2
+from multi_scale_search.agents import AgentMultiScaleM3
+from auxiliary_files.rectangle import Rectangle
+from low_fidelity_simulation.worldmodel import WorldModel
+from multi_scale_search import auxiliary_functions
 import config
 
-from src.multi_scale_search.agents import AgentFLAT
-from src.multi_scale_search.belief import Belief
-from src.multi_scale_search.core import Agent
-from src.low_fidelity_simulation.low_level_controller import ControllerLFS
+from multi_scale_search.agents import AgentFLAT
+from multi_scale_search.belief import Belief
+from multi_scale_search.core import Agent
+from low_fidelity_simulation.low_level_controller import ControllerLFS
 
 
 class LowFidelitySimulation:

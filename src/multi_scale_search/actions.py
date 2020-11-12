@@ -5,8 +5,8 @@ import numpy as np
 from numpy import linalg as LA
 
 import config
-from src.auxiliary_files.grid import Grid
-from src.multi_scale_search import auxiliary_functions
+from auxiliary_files.grid import Grid
+from multi_scale_search import auxiliary_functions
 
 
 class Action:

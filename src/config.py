@@ -1,9 +1,9 @@
-from src.low_fidelity_simulation import config_low_fidelity_sim
+from low_fidelity_simulation import config_low_fidelity_sim
 import math
 import os
 # global variables
 
-ROOT_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/'
+ROOT_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/../'
 SARSOP_SRC_FOLDER = ROOT_FOLDER + 'third_party/sarsop/src/'
 # initialize all variables with the default values which correspond to the low fidelity simulation.
 # the script run_experiment.py overwrites all variables for the correct simulation environment
