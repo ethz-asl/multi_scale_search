@@ -1,5 +1,7 @@
 # Multi-Scale Object Search
 
+Multi-Scale Object Search is a hierarchical POMDP framework to solve object search and delivery tasks. The method reasons on multiple spatial scales in order to reduce computation time. The problem is first solved in the top layer of the hierarchy with a coarsely discretized state space. Its solution is then refined in the lower layers with increasing resolution.
+
 ## Installation
 
 The following instructions have been tested with Python 3. First, clone the repo.
@@ -23,7 +25,7 @@ catkin build multi_scale_search
 source path/to/catkin_ws/devel/setup.zsh
 ```
 
-or alternatively
+or alternatively installed into the virtual environment using
 
 ```
 pip install -e .
@@ -38,6 +40,12 @@ make
 
 ## Running the Experiments
 
+The following command will open a GUI that allows you to select and run different scenarios with different agents.
+
 ```
-python scripts/run_experiment.py [--gui]
+python scripts/run_experiment.py --gui
 ```
+
+For example, selecting `scenario 01`, then clicking `set test scenario` followed by `Start Simulation` will produce the following solution:
+
+![animation](docs/animation.gif)
