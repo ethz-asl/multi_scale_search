@@ -1,6 +1,8 @@
 # Multi-Scale Object Search
 
-Multi-Scale Object Search is a hierarchical POMDP framework to solve object search and delivery tasks. The method reasons on multiple spatial scales in order to reduce computation time. The problem is first solved in the top layer of the hierarchy with a coarsely discretized state space. Its solution is then refined in the lower layers with increasing resolution.
+This repository contains the implementation of our work currently under review for ICRA 2021:
+
+* Luc Holzherr, Julian Förster, Michel Breyer, Juan Nieto, Roland Siegwart and Jen Jen Chung, “Efficient Multi-scale POMDPs for Robotic Object Search and Delivery”
 
 ## Installation
 
